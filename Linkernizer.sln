@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36203.30 d17.14
+VisualStudioVersion = 17.14.36203.30
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linkernizer", "Linkernizer\Linkernizer.csproj", "{00ADE973-43F6-41B3-9E6F-A27EC89D94AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linkernizer.Tests", "Linkernizer.Tests\Linkernizer.Tests.csproj", "{A2BAF18E-C451-4A24-92C0-A5E5CAF68F98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linkernizer.Benchmarks", "Linkernizer.Benchmarks\Linkernizer.Benchmarks.csproj", "{B438BBA3-2282-4158-865F-6BBC30363326}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{A2BAF18E-C451-4A24-92C0-A5E5CAF68F98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2BAF18E-C451-4A24-92C0-A5E5CAF68F98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2BAF18E-C451-4A24-92C0-A5E5CAF68F98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B438BBA3-2282-4158-865F-6BBC30363326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B438BBA3-2282-4158-865F-6BBC30363326}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B438BBA3-2282-4158-865F-6BBC30363326}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B438BBA3-2282-4158-865F-6BBC30363326}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
