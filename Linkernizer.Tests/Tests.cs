@@ -27,4 +27,28 @@ public class Tests
     // Assert
     Assert.Equal(expectedOutput, actualOutput);
   }
+
+  /// <summary>
+  /// Tests the library with custom options.
+  /// </summary>
+  /// <param name="input">The value that should be supplied to the library.</param>
+  /// <param name="expectedOutput">The value the actual output should match.</param>
+  [Theory]
+  [ClassData(typeof(CustomOptionsData))]
+  public void CustomOptionsTest(string? input, string? expectedOutput)
+  {
+    // Arrange
+    var linkernizer = new Linkernizer(options =>
+    {
+      options.OpenExternalLinksInNewTab = true;
+      options.InternalHost = "www.example.com";
+      options.DefaultScheme = "http://";
+    });
+
+    // Act
+    var actualOutput = linkernizer.Linkernize(input);
+
+    // Assert
+    Assert.Equal(expectedOutput, actualOutput);
+  }
 }
