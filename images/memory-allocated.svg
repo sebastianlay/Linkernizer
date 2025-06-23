@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="620" height="390"
+  style="overflow: hidden;">
+  <rect x="0" y="0" width="620" height="390" stroke="none" stroke-width="0" fill="#ffffff"></rect>
+  <g>
+    <text text-anchor="start" x="115" y="52.05" font-family="Arial" font-size="13" font-weight="bold" stroke="none"
+      stroke-width="0" fill="#000000">Memory allocated (lower is better)</text>
+  </g>
+  <g>
+    <g>
+      <text text-anchor="start" x="530" y="86.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+        fill="#222222">Linkernizer</text>
+      <rect x="499" y="75" width="26" height="13" stroke="none" stroke-width="0" fill="#fde725"></rect>
+    </g>
+    <g>
+      <text text-anchor="start" x="530" y="107.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+        fill="#222222">AutoLink</text>
+      <rect x="499" y="96" width="26" height="13" stroke="none" stroke-width="0" fill="#22a884"></rect>
+    </g>
+    <g>
+      <text text-anchor="start" x="530" y="128.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+        fill="#222222">TextHelper</text>
+      <rect x="499" y="117" width="26" height="13" stroke="none" stroke-width="0" fill="#440154"></rect>
+    </g>
+  </g>
+  <g>
+    <g>
+      <g>
+        <rect x="115" y="315" width="371" height="1" stroke="none" stroke-width="0" fill="#cccccc"></rect>
+        <rect x="115" y="267" width="371" height="1" stroke="none" stroke-width="0" fill="#cccccc"></rect>
+        <rect x="115" y="219" width="371" height="1" stroke="none" stroke-width="0" fill="#cccccc"></rect>
+        <rect x="115" y="171" width="371" height="1" stroke="none" stroke-width="0" fill="#cccccc"></rect>
+        <rect x="115" y="123" width="371" height="1" stroke="none" stroke-width="0" fill="#cccccc"></rect>
+        <rect x="115" y="75" width="371" height="1" stroke="none" stroke-width="0" fill="#cccccc"></rect>
+        <rect x="115" y="291" width="371" height="1" stroke="none" stroke-width="0" fill="#ebebeb"></rect>
+        <rect x="115" y="243" width="371" height="1" stroke="none" stroke-width="0" fill="#ebebeb"></rect>
+        <rect x="115" y="195" width="371" height="1" stroke="none" stroke-width="0" fill="#ebebeb"></rect>
+        <rect x="115" y="147" width="371" height="1" stroke="none" stroke-width="0" fill="#ebebeb"></rect>
+        <rect x="115" y="99" width="371" height="1" stroke="none" stroke-width="0" fill="#ebebeb"></rect>
+      </g>
+      <g>
+        <rect x="133" y="315" width="19" height="0.5" stroke="none" stroke-width="0" fill="#fde725"></rect>
+        <rect x="226" y="315" width="18" height="0.5" stroke="none" stroke-width="0" fill="#fde725"></rect>
+        <rect x="318" y="302" width="19" height="13" stroke="none" stroke-width="0" fill="#fde725"></rect>
+        <rect x="411" y="261" width="18" height="54" stroke="none" stroke-width="0" fill="#fde725"></rect>
+        <rect x="153" y="313.81039999999996" width="18" height="1.6896000000000413" stroke="none" stroke-width="0"
+          fill="#22a884"></rect>
+        <rect x="245" y="313.81039999999996" width="18" height="1.6896000000000413" stroke="none" stroke-width="0"
+          fill="#22a884"></rect>
+        <rect x="338" y="286" width="18" height="29" stroke="none" stroke-width="0" fill="#22a884"></rect>
+        <rect x="430" y="113" width="18" height="202" stroke="none" stroke-width="0" fill="#22a884"></rect>
+        <rect x="172" y="312" width="18" height="3" stroke="none" stroke-width="0" fill="#440154"></rect>
+        <rect x="264" y="312" width="19" height="3" stroke="none" stroke-width="0" fill="#440154"></rect>
+        <rect x="357" y="291" width="18" height="24" stroke="none" stroke-width="0" fill="#440154"></rect>
+        <rect x="449" y="241" width="19" height="74" stroke="none" stroke-width="0" fill="#440154"></rect>
+      </g>
+      <g>
+        <rect x="115" y="315" width="371" height="1" stroke="none" stroke-width="0" fill="#333333"></rect>
+      </g>
+    </g>
+    <g>
+      <g><text text-anchor="middle" x="161.75" y="335.05" font-family="Arial" font-size="13" stroke="none"
+          stroke-width="0" fill="#222222">ShortTextNoMatches</text></g>
+      <g><text text-anchor="middle" x="254.25" y="352.05" font-family="Arial" font-size="13" stroke="none"
+          stroke-width="0" fill="#222222">LongTextNoMatches</text></g>
+      <g><text text-anchor="middle" x="346.75" y="335.05" font-family="Arial" font-size="13" stroke="none"
+          stroke-width="0" fill="#222222">ShortTextTwoMatches</text></g>
+      <g><text text-anchor="middle" x="439.25" y="352.05" font-family="Arial" font-size="13" stroke="none"
+          stroke-width="0" fill="#222222">LongTextFourMatches</text></g>
+      <g><text text-anchor="end" x="102" y="320.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+          fill="#444444">0</text></g>
+      <g><text text-anchor="end" x="102" y="272.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+          fill="#444444">2K</text></g>
+      <g><text text-anchor="end" x="102" y="224.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+          fill="#444444">4K</text></g>
+      <g><text text-anchor="end" x="102" y="176.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+          fill="#444444">6K</text></g>
+      <g><text text-anchor="end" x="102" y="128.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+          fill="#444444">8K</text></g>
+      <g><text text-anchor="end" x="102" y="80.05" font-family="Arial" font-size="13" stroke="none" stroke-width="0"
+          fill="#444444">10K</text></g>
+    </g>
+  </g>
+  <g>
+    <text text-anchor="middle" x="44.05" y="195.5" font-family="Arial" font-size="13" font-style="italic"
+      transform="rotate(-90 44.05 195.5)" stroke="none" stroke-width="0" fill="#222222">bytes</text>
+  </g>
+</svg>
