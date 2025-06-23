@@ -5,7 +5,7 @@ namespace Linkernizer.Tests;
 
 /// <summary>
 /// This test suite is used to verify code changes and as a sort of documentation
-/// of the expected behaviour as the "right" behaviour can be highly subjective.
+/// of the expected behavior as the "right" behavior can be highly subjective.
 /// </summary>
 public class Tests
 {

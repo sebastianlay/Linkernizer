@@ -189,8 +189,8 @@ public class Linkernizer : ILinkernizer
     while (length > 0 && _trimCharacters.Contains(input[offset + length - 1]))
       length--;
 
-    // Trim parenthesis and brackets in pairs.
-    while (length > 1 && AreParenthesisOrBrackets(input[offset], input[offset + length - 1]))
+    // Trim parentheses and brackets in pairs.
+    while (length > 1 && AreParenthesesOrBrackets(input[offset], input[offset + length - 1]))
     {
       offset++;
       length -= 2;
@@ -201,12 +201,12 @@ public class Linkernizer : ILinkernizer
 
   /// <summary>
   /// Determines if the given characters are a matching pair
-  /// of parenthesis or brackets.
+  /// of parentheses or brackets.
   /// </summary>
-  /// <param name="firstChar">The first character if the candidate.</param>
-  /// <param name="lastChar">The last character if the candidate.</param>
+  /// <param name="firstChar">The first character of the candidate.</param>
+  /// <param name="lastChar">The last character of the candidate.</param>
   /// <returns>True if the two characters are a matching pair.</returns>
-  private static bool AreParenthesisOrBrackets(char firstChar, char lastChar)
+  private static bool AreParenthesesOrBrackets(char firstChar, char lastChar)
   {
     return (firstChar == '(' && lastChar == ')')
         || (firstChar == '[' && lastChar == ']')

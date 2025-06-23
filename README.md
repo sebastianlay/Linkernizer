@@ -36,7 +36,7 @@ However, there are also some limitations:
 
 ## Installation
 
-The library can be used like any other NuGet package, for example:
+The library can be used like any other NuGet package. For example:
 ```PowerShell
 > dotnet add package Linkernizer
 ```
