@@ -38,7 +38,7 @@ However, there are also some limitations:
 
 The library can be used like any other NuGet package, for example:
 ```PowerShell
-> dotnet add package Linkernizer --version 1.0.0
+> dotnet add package Linkernizer
 ```
 
 You can find more information on [https://www.nuget.org/packages/Linkernizer](https://www.nuget.org/packages/Linkernizer).
@@ -46,7 +46,7 @@ You can find more information on [https://www.nuget.org/packages/Linkernizer](ht
 ## Benchmarks
 
 The benchmarks compare the following libraries in their default configuration:
-- [Linkernizer](https://github.com/sebastianlay/Linkernizer) (1.0.0)
+- [Linkernizer](https://github.com/sebastianlay/Linkernizer) (1.0.1)
 - [AutoLink](https://github.com/mganss/AutoLink) (2.0.5)
 - [TextHelper](https://github.com/tylermercier/TextHelper) (0.2.0)
 

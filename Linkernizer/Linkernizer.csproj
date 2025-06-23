@@ -4,13 +4,17 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId>linkernizer</PackageId>
+    <PackageId>Linkernizer</PackageId>
+    <PackageIcon>icon.png</PackageIcon>
     <Title>Linkernizer</Title>
     <Authors>sebastianlay</Authors>
     <RepositoryUrl>https://github.com/sebastianlay/linkernizer</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <Description>The (possibly best) .NET library for automatically linking URLs and email addresses</Description>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -26,7 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\images\icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
