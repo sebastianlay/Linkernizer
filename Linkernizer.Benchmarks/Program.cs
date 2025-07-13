@@ -6,7 +6,7 @@ using TextHelper;
 namespace Linkernizer.Benchmarks;
 
 /// <summary>
-/// Compares the following libraries in regards to execution time and memory footprint:
+/// Compares the following libraries regarding execution time and memory footprint:
 ///   <list type="bullet">
 ///     <item>
 ///       <term>Linkernizer (2025)</term>
@@ -30,38 +30,38 @@ public class Benchmarks
   private const string ShortTextTwoMatches = "Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua.";
   private const string LongTextFourMatches = "Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-  private readonly Linkernizer linkernizer = new();
-  private readonly AutoLink autoLink = new();
+  private readonly Linkernizer _linkernizer = new();
+  private readonly AutoLink _autoLink = new();
 
   #region Linkernizer
 
   [Benchmark]
-  public string LinkernizerShortTextNoMatches() => linkernizer.Linkernize(ShortTextNoMatches);
+  public string LinkernizerShortTextNoMatches() => _linkernizer.Linkernize(ShortTextNoMatches);
 
   [Benchmark]
-  public string LinkernizerLongTextNoMatches() => linkernizer.Linkernize(LongTextNoMatches);
+  public string LinkernizerLongTextNoMatches() => _linkernizer.Linkernize(LongTextNoMatches);
 
   [Benchmark]
-  public string LinkernizerShortTextTwoMatches() => linkernizer.Linkernize(ShortTextTwoMatches);
+  public string LinkernizerShortTextTwoMatches() => _linkernizer.Linkernize(ShortTextTwoMatches);
 
   [Benchmark]
-  public string LinkernizerLongTextFourMatches() => linkernizer.Linkernize(LongTextFourMatches);
+  public string LinkernizerLongTextFourMatches() => _linkernizer.Linkernize(LongTextFourMatches);
 
   #endregion
 
   #region AutoLink
 
   [Benchmark]
-  public string AutoLinkShortTextNoMatches() => autoLink.Link(ShortTextNoMatches);
+  public string AutoLinkShortTextNoMatches() => _autoLink.Link(ShortTextNoMatches);
 
   [Benchmark]
-  public string AutoLinkLongTextNoMatches() => autoLink.Link(LongTextNoMatches);
+  public string AutoLinkLongTextNoMatches() => _autoLink.Link(LongTextNoMatches);
 
   [Benchmark]
-  public string AutoLinkShortTextTwoMatches() => autoLink.Link(ShortTextTwoMatches);
+  public string AutoLinkShortTextTwoMatches() => _autoLink.Link(ShortTextTwoMatches);
 
   [Benchmark]
-  public string AutoLinkLongTextFourMatches() => autoLink.Link(LongTextFourMatches);
+  public string AutoLinkLongTextFourMatches() => _autoLink.Link(LongTextFourMatches);
 
   #endregion
 

@@ -164,7 +164,7 @@ public class Linkernizer : ILinkernizer
       // of the word. This is not strictly standards-compliant,
       // but often the desired behaviour in the *real* world.
       var trimmedRange = TrimExtraCharacters(input, range);
-      (var offset, var length) = trimmedRange.GetOffsetAndLength(input.Length);
+      var (offset, length) = trimmedRange.GetOffsetAndLength(input.Length);
 
       // Check if the word is actually a link and, if so, which type.
       if (TryGetReplacementType(input[trimmedRange], out var type))
@@ -183,7 +183,7 @@ public class Linkernizer : ILinkernizer
   /// <returns>The trimmed range of a possible replacement in the input.</returns>
   private Range TrimExtraCharacters(ReadOnlySpan<char> input, Range range)
   {
-    (var offset, var length) = range.GetOffsetAndLength(input.Length);
+    var (offset, length) = range.GetOffsetAndLength(input.Length);
 
     // Trim some trailing characters (even though they could technically be part of the URL).
     while (length > 0 && _trimCharacters.Contains(input[offset + length - 1]))
@@ -296,7 +296,7 @@ public class Linkernizer : ILinkernizer
   }
 
   /// <summary>
-  /// Detemines if the host of the given link matches
+  /// Determines if the host of the given link matches
   /// the internal host given in the options.
   /// </summary>
   /// <param name="link">The assumed link with or without scheme.</param>
