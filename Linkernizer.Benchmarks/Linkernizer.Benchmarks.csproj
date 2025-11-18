@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoLink" Version="2.0.5" />
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.6" />
     <PackageReference Include="TextHelper" Version="0.2.0" />
   </ItemGroup>
 
