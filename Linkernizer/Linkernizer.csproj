@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Linkernizer</PackageId>
@@ -15,6 +15,7 @@
     <Description>The (possibly best) .NET library for automatically linking URLs and email addresses</Description>
     <AssemblyVersion>1.0.1</AssemblyVersion>
     <Version>1.0.1</Version>
+    <LangVersion>14</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
