@@ -1,8 +1,6 @@
 ﻿using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Linkernizer.Internal;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Linkernizer;
 
@@ -25,8 +23,6 @@ public class Linkernizer : ILinkernizer
   ]);
 
   private readonly LinkernizerOptions _options = new();
-  private readonly DefaultObjectPoolProvider _objectPoolProvider = new();
-  private readonly ObjectPool<StringBuilder> _stringBuilderPool;
 
   /// <summary>
   ///  <para>
@@ -50,8 +46,6 @@ public class Linkernizer : ILinkernizer
   public Linkernizer(Action<LinkernizerOptions>? action = null)
   {
     action?.Invoke(_options);
-
-    _stringBuilderPool = _objectPoolProvider.CreateStringBuilderPool();
   }
 
   /// <summary>
@@ -70,13 +64,11 @@ public class Linkernizer : ILinkernizer
     if (input is null)
       return input;
 
-    var inputAsSpan = input.AsSpan();
-
     // Preliminary check if there are possible matches at all.
-    if (!inputAsSpan.ContainsAny(_indicators))
+    if (!input.AsSpan().ContainsAny(_indicators))
       return input;
 
-    return LinkernizeInternal(inputAsSpan);
+    return LinkernizeInternal(input);
   }
 
   /// <summary>
@@ -91,14 +83,16 @@ public class Linkernizer : ILinkernizer
   /// <returns>The output containing unencoded HTML markup.</returns>
   public string Linkernize(ReadOnlySpan<char> input)
   {
+    var inputString = input.ToString();
+
     if (input is [])
-      return input.ToString();
+      return inputString;
 
     // Preliminary check if there are possible matches at all.
     if (!input.ContainsAny(_indicators))
-      return input.ToString();
+      return inputString;
 
-    return LinkernizeInternal(input);
+    return LinkernizeInternal(inputString);
   }
 
   /// <summary>
@@ -107,38 +101,84 @@ public class Linkernizer : ILinkernizer
   /// </summary>
   /// <param name="input">The complete input.</param>
   /// <returns>A newly constructed string with relevant replacements done.</returns>
-  private string LinkernizeInternal(ReadOnlySpan<char> input)
+  private string LinkernizeInternal(string input)
   {
     var replacements = GetReplacements(input);
     if (replacements.Count == 0)
-      return input.ToString();
+      return input;
 
-    var index = 0;
-    var stringBuilder = _stringBuilderPool.Get();
+    var defaultScheme = _options.DefaultScheme;
+    var outputLength = GetOutputLength(input.Length, replacements, defaultScheme.Length);
+    var state = new State(input, replacements, defaultScheme);
+
+    return string.Create(outputLength, state, WriteOutput);
+  }
+
+  /// <summary>
+  /// Computes the total length of the output string based on
+  /// the input length and the markup overhead of each replacement.
+  /// </summary>
+  /// <param name="inputLength">The length of the complete input.</param>
+  /// <param name="replacements">The list of replacements to be made.</param>
+  /// <param name="defaultSchemeLength">The length of the default scheme.</param>
+  /// <returns>The exact length of the output string.</returns>
+  private static int GetOutputLength(int inputLength, List<Replacement> replacements, int defaultSchemeLength)
+  {
+    var outputLength = inputLength;
+    foreach (var replacement in replacements)
+    {
+      outputLength += replacement.Length + replacement.Type switch
+      {
+        ReplacementType.InternalWithScheme or ReplacementType.EmailWithScheme => 15,
+        ReplacementType.InternalWithoutScheme => 15 + defaultSchemeLength,
+        ReplacementType.ExternalWithScheme => 31,
+        ReplacementType.ExternalWithoutScheme => 31 + defaultSchemeLength,
+        ReplacementType.EmailWithoutScheme => 22,
+        _ => 0
+      };
+    }
+
+    return outputLength;
+  }
+
+  /// <summary>
+  /// Writes the complete output into the given span by copying
+  /// non-replaced segments and writing HTML markup for each replacement.
+  /// </summary>
+  /// <param name="output">The target span to write into.</param>
+  /// <param name="state">The input, replacements, and default scheme.</param>
+  private static void WriteOutput(Span<char> output, State state)
+  {
+    ReadOnlySpan<char> input = state.Input;
+    var replacements = state.Replacements;
+    var defaultScheme = state.DefaultScheme;
+    var pos = 0;
+    var inputIndex = 0;
 
     foreach (var replacement in replacements)
     {
-      // Append the part of the original input that leads up
+      // Copy the part of the original input that leads up
       // to the beginning of the current replacement.
-      if (replacement.Offset > index)
+      if (replacement.Offset > inputIndex)
       {
-        stringBuilder.Append(input[index..replacement.Offset]);
-        index = replacement.Offset;
+        var segment = input[inputIndex..replacement.Offset];
+        segment.CopyTo(output[pos..]);
+        pos += segment.Length;
+        inputIndex = replacement.Offset;
       }
 
-      // Append the new value of the current replacement.
-      AppendReplacedValue(input, replacement, stringBuilder);
-      index += replacement.Length;
+      // Write the new value of the current replacement.
+      var slice = input.Slice(replacement.Offset, replacement.Length);
+      WriteReplacement(output, ref pos, slice, replacement.Type, defaultScheme);
+      inputIndex += replacement.Length;
     }
 
-    // Append the remaining part of the original input.
-    if (index < input.Length)
-      stringBuilder.Append(input[index..input.Length]);
+    // Copy the remaining part of the original input.
+    if (inputIndex >= input.Length)
+      return;
 
-    var result = stringBuilder.ToString();
-    _stringBuilderPool.Return(stringBuilder);
-
-    return result;
+    var remaining = input[inputIndex..];
+    remaining.CopyTo(output[pos..]);
   }
 
   /// <summary>
@@ -162,7 +202,7 @@ public class Linkernizer : ILinkernizer
 
       // Trim extra characters at the beginning and end
       // of the word. This is not strictly standards-compliant,
-      // but often the desired behaviour in the *real* world.
+      // but often the desired behavior in the *real* world.
       var trimmedRange = TrimExtraCharacters(input, range);
       var (offset, length) = trimmedRange.GetOffsetAndLength(input.Length);
 
@@ -274,7 +314,7 @@ public class Linkernizer : ILinkernizer
     }
 
     // Treat all links as external links when the internal host is not set
-    // as the distinction between internal and external is done based on the host. 
+    // as the distinction between internal and external is done based on the host.
     if (string.IsNullOrEmpty(_options.InternalHost))
     {
       return withScheme
@@ -325,56 +365,61 @@ public class Linkernizer : ILinkernizer
   }
 
   /// <summary>
-  /// Constructs and appends the part of the given input
-  /// based on the given replacement to the result.
+  /// Writes the HTML markup for the given replacement into the target span.
   /// </summary>
-  /// <param name="input">The complete input.</param>
-  /// <param name="replacement">The information about what should be replaced.</param>
-  /// <param name="stringBuilder">The result where the replaced value should be appended to.</param>
-  private void AppendReplacedValue(ReadOnlySpan<char> input, Replacement replacement, StringBuilder stringBuilder)
+  /// <param name="output">The target span to write into.</param>
+  /// <param name="pos">The current write position, advanced by the number of characters written.</param>
+  /// <param name="slice">The matched part of the input.</param>
+  /// <param name="type">The type of replacement that determines the HTML markup.</param>
+  /// <param name="defaultScheme">The default scheme to prepend for links without a scheme.</param>
+  private static void WriteReplacement(Span<char> output, ref int pos, ReadOnlySpan<char> slice, ReplacementType type, string defaultScheme)
   {
-    var slice = input.Slice(replacement.Offset, replacement.Length);
+    Write(output, ref pos, "<a href=\"");
 
-    switch (replacement.Type)
+    switch (type)
     {
       case ReplacementType.InternalWithScheme:
       case ReplacementType.EmailWithScheme:
-        stringBuilder.Append("<a href=\"");
-        stringBuilder.Append(slice);
-        stringBuilder.Append("\">");
-        stringBuilder.Append(slice);
-        stringBuilder.Append("</a>");
+        Write(output, ref pos, slice);
+        Write(output, ref pos, "\">");
         break;
       case ReplacementType.InternalWithoutScheme:
-        stringBuilder.Append("<a href=\"");
-        stringBuilder.Append(_options.DefaultScheme);
-        stringBuilder.Append(slice);
-        stringBuilder.Append("\">");
-        stringBuilder.Append(slice);
-        stringBuilder.Append("</a>");
+        Write(output, ref pos, defaultScheme);
+        Write(output, ref pos, slice);
+        Write(output, ref pos, "\">");
         break;
       case ReplacementType.ExternalWithScheme:
-        stringBuilder.Append("<a href=\"");
-        stringBuilder.Append(slice);
-        stringBuilder.Append("\" target=\"_blank\">");
-        stringBuilder.Append(slice);
-        stringBuilder.Append("</a>");
+        Write(output, ref pos, slice);
+        Write(output, ref pos, "\" target=\"_blank\">");
         break;
       case ReplacementType.ExternalWithoutScheme:
-        stringBuilder.Append("<a href=\"");
-        stringBuilder.Append(_options.DefaultScheme);
-        stringBuilder.Append(slice);
-        stringBuilder.Append("\" target=\"_blank\">");
-        stringBuilder.Append(slice);
-        stringBuilder.Append("</a>");
+        Write(output, ref pos, defaultScheme);
+        Write(output, ref pos, slice);
+        Write(output, ref pos, "\" target=\"_blank\">");
         break;
       case ReplacementType.EmailWithoutScheme:
-        stringBuilder.Append("<a href=\"mailto:");
-        stringBuilder.Append(slice);
-        stringBuilder.Append("\">");
-        stringBuilder.Append(slice);
-        stringBuilder.Append("</a>");
+        Write(output, ref pos, "mailto:");
+        Write(output, ref pos, slice);
+        Write(output, ref pos, "\">");
         break;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(type), type, null);
     }
+
+    Write(output, ref pos, slice);
+    Write(output, ref pos, "</a>");
+  }
+
+  /// <summary>
+  /// Copies the given value into the target span at the current
+  /// position and advances the position by the number of characters written.
+  /// </summary>
+  /// <param name="span">The target span to write into.</param>
+  /// <param name="pos">The current write position, advanced by the length of the value.</param>
+  /// <param name="value">The characters to write.</param>
+  private static void Write(Span<char> span, ref int pos, ReadOnlySpan<char> value)
+  {
+    value.CopyTo(span[pos..]);
+    pos += value.Length;
   }
 }
