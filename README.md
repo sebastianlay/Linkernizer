@@ -25,7 +25,7 @@ var linkernizer = new Linkernizer(options => {
 You should use it because:
 - It is **fast** (see the [benchmarks](#benchmarks) below for more details)
 - It uses **little memory** (there are zero allocations after the setup when the input does not contain links)
-- It has **only one dependency** (to [Microsoft.Extensions.ObjectPool](https://www.nuget.org/packages/microsoft.extensions.objectpool/))
+- It has **only one dependency** (to [Microsoft.SourceLink.GitHub](https://www.nuget.org/packages/microsoft.sourcelink.github/))
 - It **provides an interface** so that it can be used via dependency injection
 
 However, there are also some limitations:
@@ -46,7 +46,7 @@ You can find more information on [https://www.nuget.org/packages/Linkernizer](ht
 ## Benchmarks
 
 The benchmarks compare the following libraries in their default configuration:
-- [Linkernizer](https://github.com/sebastianlay/Linkernizer) (1.0.1)
+- [Linkernizer](https://github.com/sebastianlay/Linkernizer) (1.0.2)
 - [AutoLink](https://github.com/mganss/AutoLink) (2.0.5)
 - [TextHelper](https://github.com/tylermercier/TextHelper) (0.2.0)
 
