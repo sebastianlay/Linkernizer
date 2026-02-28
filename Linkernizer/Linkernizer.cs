@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using Linkernizer.Internal;
 
 namespace Linkernizer;
@@ -12,15 +13,15 @@ namespace Linkernizer;
 /// </summary>
 public class Linkernizer : ILinkernizer
 {
-  private readonly SearchValues<string> _indicators = SearchValues.Create(["www.", "://", "@"], StringComparison.OrdinalIgnoreCase);
-  private readonly SearchValues<char> _trimCharacters = SearchValues.Create(['.', ':', '?', '!', ',', ';']);
-  private readonly SearchValues<char> _whitespaces = SearchValues.Create([
+  private static readonly SearchValues<string> Indicators = SearchValues.Create(["www.", "://", "@"], StringComparison.OrdinalIgnoreCase);
+  private static readonly SearchValues<char> TrimCharacters = SearchValues.Create('.', ':', '?', '!', ',', ';');
+  private static readonly SearchValues<char> Whitespaces = SearchValues.Create(
     '\u0020', '\u00A0', '\u1680', '\u2000', '\u2001',
     '\u2002', '\u2003', '\u2004', '\u2005', '\u2006',
     '\u2007', '\u2008', '\u2009', '\u200A', '\u202F',
     '\u205F', '\u3000', '\u2028', '\u2029', '\u0009',
     '\u000A', '\u000B', '\u000C', '\u000D', '\u0085'
-  ]);
+  );
 
   private readonly LinkernizerOptions _options = new();
 
@@ -65,7 +66,7 @@ public class Linkernizer : ILinkernizer
       return input;
 
     // Preliminary check if there are possible matches at all.
-    if (!input.AsSpan().ContainsAny(_indicators))
+    if (!input.AsSpan().ContainsAny(Indicators))
       return input;
 
     return LinkernizeInternal(input);
@@ -83,16 +84,14 @@ public class Linkernizer : ILinkernizer
   /// <returns>The output containing unencoded HTML markup.</returns>
   public string Linkernize(ReadOnlySpan<char> input)
   {
-    var inputString = input.ToString();
-
     if (input is [])
-      return inputString;
+      return string.Empty;
 
     // Preliminary check if there are possible matches at all.
-    if (!input.ContainsAny(_indicators))
-      return inputString;
+    if (!input.ContainsAny(Indicators))
+      return input.ToString();
 
-    return LinkernizeInternal(inputString);
+    return LinkernizeInternal(input.ToString());
   }
 
   /// <summary>
@@ -108,7 +107,8 @@ public class Linkernizer : ILinkernizer
       return input;
 
     var defaultScheme = _options.DefaultScheme;
-    var outputLength = GetOutputLength(input.Length, replacements, defaultScheme.Length);
+    var replacementsSpan = CollectionsMarshal.AsSpan(replacements);
+    var outputLength = GetOutputLength(input.Length, replacementsSpan, defaultScheme.Length);
     var state = new State(input, replacements, defaultScheme);
 
     return string.Create(outputLength, state, WriteOutput);
@@ -118,16 +118,15 @@ public class Linkernizer : ILinkernizer
   /// Computes the total length of the output string based on
   /// the input length and the markup overhead of each replacement.
   /// </summary>
-  /// <param name="inputLength">The length of the complete input.</param>
+  /// <param name="length">The length of the complete input.</param>
   /// <param name="replacements">The list of replacements to be made.</param>
   /// <param name="defaultSchemeLength">The length of the default scheme.</param>
   /// <returns>The exact length of the output string.</returns>
-  private static int GetOutputLength(int inputLength, List<Replacement> replacements, int defaultSchemeLength)
+  private static int GetOutputLength(int length, ReadOnlySpan<Replacement> replacements, int defaultSchemeLength)
   {
-    var outputLength = inputLength;
     foreach (var replacement in replacements)
     {
-      outputLength += replacement.Length + replacement.Type switch
+      length += replacement.Length + replacement.Type switch
       {
         ReplacementType.InternalWithScheme or ReplacementType.EmailWithScheme => 15,
         ReplacementType.InternalWithoutScheme => 15 + defaultSchemeLength,
@@ -138,7 +137,7 @@ public class Linkernizer : ILinkernizer
       };
     }
 
-    return outputLength;
+    return length;
   }
 
   /// <summary>
@@ -149,10 +148,10 @@ public class Linkernizer : ILinkernizer
   /// <param name="state">The input, replacements, and default scheme.</param>
   private static void WriteOutput(Span<char> output, State state)
   {
-    ReadOnlySpan<char> input = state.Input;
-    var replacements = state.Replacements;
-    var defaultScheme = state.DefaultScheme;
-    var pos = 0;
+    var input = state.Input.AsSpan();
+    var replacements = CollectionsMarshal.AsSpan(state.Replacements);
+
+    var position = 0;
     var inputIndex = 0;
 
     foreach (var replacement in replacements)
@@ -162,23 +161,24 @@ public class Linkernizer : ILinkernizer
       if (replacement.Offset > inputIndex)
       {
         var segment = input[inputIndex..replacement.Offset];
-        segment.CopyTo(output[pos..]);
-        pos += segment.Length;
+        segment.CopyTo(output[position..]);
+        position += segment.Length;
         inputIndex = replacement.Offset;
       }
 
       // Write the new value of the current replacement.
-      var slice = input.Slice(replacement.Offset, replacement.Length);
-      WriteReplacement(output, ref pos, slice, replacement.Type, defaultScheme);
+      var inputSlice = input.Slice(replacement.Offset, replacement.Length);
+      WriteReplacement(output, ref position, inputSlice, replacement.Type, state.DefaultScheme);
       inputIndex += replacement.Length;
     }
 
-    // Copy the remaining part of the original input.
+    // Check if there is anything remaining.
     if (inputIndex >= input.Length)
       return;
 
+    // Copy the remaining part of the original input.
     var remaining = input[inputIndex..];
-    remaining.CopyTo(output[pos..]);
+    remaining.CopyTo(output[position..]);
   }
 
   /// <summary>
@@ -194,21 +194,20 @@ public class Linkernizer : ILinkernizer
     // Split the input on whitespaces as they are usually
     // the boundary of a part that should be linked.
     // We assume spaces in URLs to be URL-encoded.
-    foreach (var range in input.SplitAny(_whitespaces))
+    foreach (var range in input.SplitAny(Whitespaces))
     {
       // Ignore all 'words' that cannot contain a link.
-      if (!input[range].ContainsAny(_indicators))
+      if (!input[range].ContainsAny(Indicators))
         continue;
 
       // Trim extra characters at the beginning and end
       // of the word. This is not strictly standards-compliant,
       // but often the desired behavior in the *real* world.
-      var trimmedRange = TrimExtraCharacters(input, range);
-      var (offset, length) = trimmedRange.GetOffsetAndLength(input.Length);
+      var (offset, length) = TrimExtraCharacters(input, range);
 
       // Check if the word is actually a link and, if so, which type.
-      if (TryGetReplacementType(input[trimmedRange], out var type))
-        result.Add(new Replacement(offset, length, type.Value));
+      if (TryGetReplacementType(input.Slice(offset, length), out var type))
+        result.Add(new Replacement(offset, length, type));
     }
 
     return result;
@@ -221,12 +220,12 @@ public class Linkernizer : ILinkernizer
   /// <param name="input">The complete input.</param>
   /// <param name="range">The range of a possible replacement in the input.</param>
   /// <returns>The trimmed range of a possible replacement in the input.</returns>
-  private Range TrimExtraCharacters(ReadOnlySpan<char> input, Range range)
+  private static (int Offset, int Length) TrimExtraCharacters(ReadOnlySpan<char> input, Range range)
   {
     var (offset, length) = range.GetOffsetAndLength(input.Length);
 
     // Trim some trailing characters (even though they could technically be part of the URL).
-    while (length > 0 && _trimCharacters.Contains(input[offset + length - 1]))
+    while (length > 0 && TrimCharacters.Contains(input[offset + length - 1]))
       length--;
 
     // Trim parentheses and brackets in pairs.
@@ -236,7 +235,7 @@ public class Linkernizer : ILinkernizer
       length -= 2;
     }
 
-    return new Range(offset, offset + length);
+    return (offset, length);
   }
 
   /// <summary>
@@ -261,9 +260,9 @@ public class Linkernizer : ILinkernizer
   /// <param name="candidate">The part of the input that potentially needs to be replaced.</param>
   /// <param name="type">The type of replacement that needs to be done.</param>
   /// <returns>True if the given candidate needs to be replaced.</returns>
-  private bool TryGetReplacementType(ReadOnlySpan<char> candidate, [NotNullWhen(true)] out ReplacementType? type)
+  private bool TryGetReplacementType(ReadOnlySpan<char> candidate, out ReplacementType type)
   {
-    type = null;
+    type = default;
 
     // Discard too short candidates as the shortest possible link is either "ab://c" or "a@b.de".
     if (candidate.Length < 6)
@@ -285,7 +284,8 @@ public class Linkernizer : ILinkernizer
 
     // We assume an email address if the candidate contains exactly one 'at' character
     // (that is not at the beginning, as this would more likely be some sort of handle).
-    if (candidate.IndexOf('@') >= 1 && candidate.IndexOf('@') == candidate.LastIndexOf('@'))
+    var firstAtIndex = candidate.IndexOf('@');
+    if (firstAtIndex >= 1 && firstAtIndex == candidate.LastIndexOf('@'))
     {
       type = candidate.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
         ? ReplacementType.EmailWithScheme
@@ -350,7 +350,7 @@ public class Linkernizer : ILinkernizer
       // Prepend the default scheme if necessary so that we have the best
       // change of being able to parse the link as an absolute URI.
       var possibleUri = link.StartsWith("www.")
-        ? _options.DefaultScheme + link.ToString()
+        ? string.Concat(_options.DefaultScheme.AsSpan(), link)
         : link.ToString();
 
       if (!Uri.TryCreate(possibleUri, UriKind.Absolute, out var uri))
@@ -368,58 +368,59 @@ public class Linkernizer : ILinkernizer
   /// Writes the HTML markup for the given replacement into the target span.
   /// </summary>
   /// <param name="output">The target span to write into.</param>
-  /// <param name="pos">The current write position, advanced by the number of characters written.</param>
-  /// <param name="slice">The matched part of the input.</param>
+  /// <param name="position">The current write position, advanced by the number of characters written.</param>
+  /// <param name="inputSlice">The matched part of the input.</param>
   /// <param name="type">The type of replacement that determines the HTML markup.</param>
   /// <param name="defaultScheme">The default scheme to prepend for links without a scheme.</param>
-  private static void WriteReplacement(Span<char> output, ref int pos, ReadOnlySpan<char> slice, ReplacementType type, string defaultScheme)
+  private static void WriteReplacement(Span<char> output, ref int position, ReadOnlySpan<char> inputSlice,
+    ReplacementType type, ReadOnlySpan<char> defaultScheme)
   {
-    Write(output, ref pos, "<a href=\"");
+    Write(output, ref position, "<a href=\"");
 
     switch (type)
     {
       case ReplacementType.InternalWithScheme:
       case ReplacementType.EmailWithScheme:
-        Write(output, ref pos, slice);
-        Write(output, ref pos, "\">");
+        Write(output, ref position, inputSlice);
+        Write(output, ref position, "\">");
         break;
       case ReplacementType.InternalWithoutScheme:
-        Write(output, ref pos, defaultScheme);
-        Write(output, ref pos, slice);
-        Write(output, ref pos, "\">");
+        Write(output, ref position, defaultScheme);
+        Write(output, ref position, inputSlice);
+        Write(output, ref position, "\">");
         break;
       case ReplacementType.ExternalWithScheme:
-        Write(output, ref pos, slice);
-        Write(output, ref pos, "\" target=\"_blank\">");
+        Write(output, ref position, inputSlice);
+        Write(output, ref position, "\" target=\"_blank\">");
         break;
       case ReplacementType.ExternalWithoutScheme:
-        Write(output, ref pos, defaultScheme);
-        Write(output, ref pos, slice);
-        Write(output, ref pos, "\" target=\"_blank\">");
+        Write(output, ref position, defaultScheme);
+        Write(output, ref position, inputSlice);
+        Write(output, ref position, "\" target=\"_blank\">");
         break;
       case ReplacementType.EmailWithoutScheme:
-        Write(output, ref pos, "mailto:");
-        Write(output, ref pos, slice);
-        Write(output, ref pos, "\">");
+        Write(output, ref position, "mailto:");
+        Write(output, ref position, inputSlice);
+        Write(output, ref position, "\">");
         break;
       default:
         throw new ArgumentOutOfRangeException(nameof(type), type, null);
     }
 
-    Write(output, ref pos, slice);
-    Write(output, ref pos, "</a>");
+    Write(output, ref position, inputSlice);
+    Write(output, ref position, "</a>");
   }
 
   /// <summary>
   /// Copies the given value into the target span at the current
   /// position and advances the position by the number of characters written.
   /// </summary>
-  /// <param name="span">The target span to write into.</param>
-  /// <param name="pos">The current write position, advanced by the length of the value.</param>
+  /// <param name="targetSpan">The target span to write into.</param>
+  /// <param name="position">The current write position, advanced by the length of the value.</param>
   /// <param name="value">The characters to write.</param>
-  private static void Write(Span<char> span, ref int pos, ReadOnlySpan<char> value)
+  private static void Write(Span<char> targetSpan, ref int position, ReadOnlySpan<char> value)
   {
-    value.CopyTo(span[pos..]);
-    pos += value.Length;
+    value.CopyTo(targetSpan[position..]);
+    position += value.Length;
   }
 }
