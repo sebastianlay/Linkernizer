@@ -47,6 +47,17 @@ public class Linkernizer : ILinkernizer
   public Linkernizer(Action<LinkernizerOptions>? action = null)
   {
     action?.Invoke(_options);
+
+    if (string.IsNullOrWhiteSpace(_options.DefaultScheme))
+      throw new ArgumentException("DefaultScheme must not be null or empty.", nameof(action));
+
+    if (!_options.DefaultScheme.EndsWith("://", StringComparison.Ordinal))
+      throw new ArgumentException("DefaultScheme must end with \"://\".", nameof(action));
+
+    if (_options.InternalHost.Contains("://", StringComparison.OrdinalIgnoreCase))
+      throw new ArgumentException("InternalHost must not contain a scheme.", nameof(action));
+
+    _options.InternalHost = _options.InternalHost.TrimEnd('/');
   }
 
   /// <summary>
@@ -358,7 +369,7 @@ public class Linkernizer : ILinkernizer
 
       return uri.Host.Equals(_options.InternalHost, StringComparison.OrdinalIgnoreCase);
     }
-    catch
+    catch (UriFormatException)
     {
       return false;
     }
