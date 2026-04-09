@@ -13,8 +13,15 @@ namespace Linkernizer;
 /// </summary>
 public class Linkernizer : ILinkernizer
 {
-  private static readonly SearchValues<string> Indicators = SearchValues.Create(["www.", "://", "@"], StringComparison.OrdinalIgnoreCase);
+  private const string SchemeDelimiter = "://";
+  private const string DefaultSubdomain = "www.";
+  private const string MailToProtocol = "mailto:";
+
+  private static readonly SearchValues<string> Indicators = SearchValues.Create([SchemeDelimiter, DefaultSubdomain, "@"],
+    StringComparison.OrdinalIgnoreCase
+  );
   private static readonly SearchValues<char> TrimCharacters = SearchValues.Create('.', ':', '?', '!', ',', ';');
+  private static readonly SearchValues<char> HostDelimiters = SearchValues.Create('/', ':', '?', '#');
   private static readonly SearchValues<char> Whitespaces = SearchValues.Create(
     '\u0020', '\u00A0', '\u1680', '\u2000', '\u2001',
     '\u2002', '\u2003', '\u2004', '\u2005', '\u2006',
@@ -51,10 +58,10 @@ public class Linkernizer : ILinkernizer
     if (string.IsNullOrWhiteSpace(_options.DefaultScheme))
       throw new ArgumentException("DefaultScheme must not be null or empty.", nameof(action));
 
-    if (!_options.DefaultScheme.EndsWith("://", StringComparison.Ordinal))
+    if (!_options.DefaultScheme.EndsWith(SchemeDelimiter, StringComparison.Ordinal))
       throw new ArgumentException("DefaultScheme must end with \"://\".", nameof(action));
 
-    if (_options.InternalHost.Contains("://", StringComparison.OrdinalIgnoreCase))
+    if (_options.InternalHost.Contains(SchemeDelimiter, StringComparison.Ordinal))
       throw new ArgumentException("InternalHost must not contain a scheme.", nameof(action));
 
     _options.InternalHost = _options.InternalHost.TrimEnd('/');
@@ -280,14 +287,14 @@ public class Linkernizer : ILinkernizer
       return false;
 
     // We assume a link without a scheme for candidates starting with the common subdomain.
-    if (candidate.StartsWith("www."))
+    if (candidate.StartsWith(DefaultSubdomain, StringComparison.OrdinalIgnoreCase))
     {
       type = GetLinkType(candidate, false);
       return true;
     }
 
     // We assume a fully qualified link with a scheme if the separator is found anywhere.
-    if (candidate.Contains("://", StringComparison.OrdinalIgnoreCase))
+    if (candidate.IndexOf(SchemeDelimiter) >= 0)
     {
       type = GetLinkType(candidate, true);
       return true;
@@ -298,7 +305,7 @@ public class Linkernizer : ILinkernizer
     var firstAtIndex = candidate.IndexOf('@');
     if (firstAtIndex >= 1 && firstAtIndex == candidate.LastIndexOf('@'))
     {
-      type = candidate.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase)
+      type = candidate.StartsWith(MailToProtocol, StringComparison.OrdinalIgnoreCase)
         ? ReplacementType.EmailWithScheme
         : ReplacementType.EmailWithoutScheme;
       return true;
@@ -354,25 +361,15 @@ public class Linkernizer : ILinkernizer
   /// <returns>True if the host of the link matches the internal host of the options.</returns>
   private bool IsInternalHost(ReadOnlySpan<char> link)
   {
-    // Wrapping this method in a try/catch block as parsing the URI
-    // could throw all kinds of exceptions that we don't care about.
-    try
-    {
-      // Prepend the default scheme if necessary so that we have the best
-      // change of being able to parse the link as an absolute URI.
-      var possibleUri = link.StartsWith("www.")
-        ? string.Concat(_options.DefaultScheme.AsSpan(), link)
-        : link.ToString();
-
-      if (!Uri.TryCreate(possibleUri, UriKind.Absolute, out var uri))
-        return false;
-
-      return uri.Host.Equals(_options.InternalHost, StringComparison.OrdinalIgnoreCase);
-    }
-    catch (UriFormatException)
-    {
+    var schemeEnd = link.IndexOf(SchemeDelimiter);
+    if (schemeEnd < 0 && !link.StartsWith(DefaultSubdomain, StringComparison.OrdinalIgnoreCase))
       return false;
-    }
+
+    var hostPart = schemeEnd >= 0 ? link[(schemeEnd + SchemeDelimiter.Length)..] : link;
+    var hostEnd = hostPart.IndexOfAny(HostDelimiters);
+    var host = hostEnd >= 0 ? hostPart[..hostEnd] : hostPart;
+
+    return host.Equals(_options.InternalHost, StringComparison.OrdinalIgnoreCase);
   }
 
   /// <summary>
@@ -410,7 +407,7 @@ public class Linkernizer : ILinkernizer
         Write(output, ref position, "\" target=\"_blank\">");
         break;
       case ReplacementType.EmailWithoutScheme:
-        Write(output, ref position, "mailto:");
+        Write(output, ref position, MailToProtocol);
         Write(output, ref position, inputSlice);
         Write(output, ref position, "\">");
         break;
