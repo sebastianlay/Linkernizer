@@ -17,6 +17,11 @@ public class Linkernizer : ILinkernizer
   private const string DefaultSubdomain = "www.";
   private const string MailToProtocol = "mailto:";
 
+  private const string OpeningTagBegin = "<a href=\"";
+  private const string OpeningTagEndInternal = "\">";
+  private const string OpeningTagEndExternal = "\" target=\"_blank\">";
+  private const string ClosingTag = "</a>";
+
   private static readonly SearchValues<string> Indicators = SearchValues.Create([SchemeDelimiter, DefaultSubdomain, "@"],
     StringComparison.OrdinalIgnoreCase
   );
@@ -146,11 +151,21 @@ public class Linkernizer : ILinkernizer
     {
       length += replacement.Length + replacement.Type switch
       {
-        ReplacementType.InternalWithScheme or ReplacementType.EmailWithScheme => 15,
-        ReplacementType.InternalWithoutScheme => 15 + defaultSchemeLength,
-        ReplacementType.ExternalWithScheme => 31,
-        ReplacementType.ExternalWithoutScheme => 31 + defaultSchemeLength,
-        ReplacementType.EmailWithoutScheme => 22,
+        ReplacementType.InternalWithScheme or ReplacementType.EmailWithScheme
+          => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length,
+
+        ReplacementType.InternalWithoutScheme
+          => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + defaultSchemeLength,
+
+        ReplacementType.ExternalWithScheme
+          => OpeningTagBegin.Length + OpeningTagEndExternal.Length + ClosingTag.Length,
+
+        ReplacementType.ExternalWithoutScheme
+          => OpeningTagBegin.Length + OpeningTagEndExternal.Length + ClosingTag.Length + defaultSchemeLength,
+
+        ReplacementType.EmailWithoutScheme
+          => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + MailToProtocol.Length,
+
         _ => 0
       };
     }
@@ -383,40 +398,40 @@ public class Linkernizer : ILinkernizer
   private static void WriteReplacement(Span<char> output, ref int position, ReadOnlySpan<char> inputSlice,
     ReplacementType type, ReadOnlySpan<char> defaultScheme)
   {
-    Write(output, ref position, "<a href=\"");
+    Write(output, ref position, OpeningTagBegin);
 
     switch (type)
     {
       case ReplacementType.InternalWithScheme:
       case ReplacementType.EmailWithScheme:
         Write(output, ref position, inputSlice);
-        Write(output, ref position, "\">");
+        Write(output, ref position, OpeningTagEndInternal);
         break;
       case ReplacementType.InternalWithoutScheme:
         Write(output, ref position, defaultScheme);
         Write(output, ref position, inputSlice);
-        Write(output, ref position, "\">");
+        Write(output, ref position, OpeningTagEndInternal);
         break;
       case ReplacementType.ExternalWithScheme:
         Write(output, ref position, inputSlice);
-        Write(output, ref position, "\" target=\"_blank\">");
+        Write(output, ref position, OpeningTagEndExternal);
         break;
       case ReplacementType.ExternalWithoutScheme:
         Write(output, ref position, defaultScheme);
         Write(output, ref position, inputSlice);
-        Write(output, ref position, "\" target=\"_blank\">");
+        Write(output, ref position, OpeningTagEndExternal);
         break;
       case ReplacementType.EmailWithoutScheme:
         Write(output, ref position, MailToProtocol);
         Write(output, ref position, inputSlice);
-        Write(output, ref position, "\">");
+        Write(output, ref position, OpeningTagEndInternal);
         break;
       default:
         throw new ArgumentOutOfRangeException(nameof(type), type, null);
     }
 
     Write(output, ref position, inputSlice);
-    Write(output, ref position, "</a>");
+    Write(output, ref position, ClosingTag);
   }
 
   /// <summary>
