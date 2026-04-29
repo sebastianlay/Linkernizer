@@ -1,8 +1,7 @@
 namespace Linkernizer.Internal;
 
 /// <summary>
-/// Represents the state passed to <see cref="string.Create{TState}"/>
-/// for constructing the output string.
+/// Represents the state passed to <see cref="string.Create{TState}"/> for constructing the output string.
 /// </summary>
 internal readonly struct State(string input, List<Replacement> replacements, string defaultScheme)
 {

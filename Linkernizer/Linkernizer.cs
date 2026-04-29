@@ -38,7 +38,7 @@ public class Linkernizer : ILinkernizer
   private readonly LinkernizerOptions _options = new();
 
   /// <summary>
-  ///  <para>
+  ///   <para>
   ///     Initializes a new instance of the library with the given options.
   ///     Sane default options will be assumed if no options are given.
   ///   </para>
