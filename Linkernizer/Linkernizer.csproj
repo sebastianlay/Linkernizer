@@ -13,8 +13,8 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <Description>The (possibly best) .NET library for automatically linking URLs and email addresses</Description>
-    <AssemblyVersion>1.0.4</AssemblyVersion>
-    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.5</AssemblyVersion>
+    <Version>1.0.5</Version>
     <LangVersion>14</LangVersion>
     <DebugType>portable</DebugType>
     <IncludeSymbols>true</IncludeSymbols>
