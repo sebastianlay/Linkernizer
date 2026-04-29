@@ -334,7 +334,7 @@ public class Linkernizer : ILinkernizer
   /// </summary>
   /// <param name="link">The candidate that was already determined to be a link of some sort.</param>
   /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
-  /// <returns></returns>
+  /// <returns>The type of the link so that it can be properly replaced later.</returns>
   private ReplacementType GetLinkType(ReadOnlySpan<char> link, bool withScheme)
   {
     // Treat all links as internal links as there is no difference between
@@ -356,7 +356,7 @@ public class Linkernizer : ILinkernizer
     }
 
     // Try to get the host from the link and compare it to the given internal host.
-    if (IsInternalHost(link))
+    if (IsInternalHost(link, withScheme))
     {
       return withScheme
         ? ReplacementType.InternalWithScheme
@@ -369,22 +369,49 @@ public class Linkernizer : ILinkernizer
   }
 
   /// <summary>
-  /// Determines if the host of the given link matches
-  /// the internal host given in the options.
+  /// Determines if the host of the given link matches the internal host given in the options.
   /// </summary>
   /// <param name="link">The assumed link with or without scheme.</param>
+  /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
   /// <returns>True if the host of the link matches the internal host of the options.</returns>
-  private bool IsInternalHost(ReadOnlySpan<char> link)
+  private bool IsInternalHost(ReadOnlySpan<char> link, bool withScheme)
   {
-    var schemeEnd = link.IndexOf(SchemeDelimiter);
-    if (schemeEnd < 0 && !link.StartsWith(DefaultSubdomain, StringComparison.OrdinalIgnoreCase))
-      return false;
-
-    var hostPart = schemeEnd >= 0 ? link[(schemeEnd + SchemeDelimiter.Length)..] : link;
-    var hostEnd = hostPart.IndexOfAny(HostDelimiters);
-    var host = hostEnd >= 0 ? hostPart[..hostEnd] : hostPart;
+    var host = GetHost(link, withScheme);
 
     return host.Equals(_options.InternalHost, StringComparison.OrdinalIgnoreCase);
+  }
+
+  /// <summary>
+  /// Returns the host of the given link.
+  /// </summary>
+  /// <param name="link">The assumed link with or without scheme.</param>
+  /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
+  /// <returns>The host of the given link without the scheme.</returns>
+  private static ReadOnlySpan<char> GetHost(ReadOnlySpan<char> link, bool withScheme)
+  {
+    var linkWithoutScheme = StripScheme(link, withScheme);
+    var hostEnd = linkWithoutScheme.IndexOfAny(HostDelimiters);
+
+    return hostEnd >= 0 ? linkWithoutScheme[..hostEnd] : linkWithoutScheme;
+  }
+
+  /// <summary>
+  /// Returns the link without the scheme at the beginning in case there was any.
+  /// </summary>
+  /// <param name="link">The assumed link with or without scheme.</param>
+  /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
+  /// <returns>The link without the scheme.</returns>
+  private static ReadOnlySpan<char> StripScheme(ReadOnlySpan<char> link, bool withScheme)
+  {
+    // return the link immediately in case we know that it does not contain a scheme
+    if (!withScheme)
+      return link;
+
+    // otherwise find the end of the scheme and strip it from the link
+    var schemeEnd = link.IndexOf(SchemeDelimiter);
+    var hostStart = schemeEnd >= 0 ? schemeEnd + SchemeDelimiter.Length : 0;
+
+    return link[hostStart..];
   }
 
   /// <summary>

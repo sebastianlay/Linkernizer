@@ -141,5 +141,11 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
 
     // Multiple links
     Add("Lorem www.example.org ipsum mail@example.org dolor.", """Lorem <a href="https://www.example.org">www.example.org</a> ipsum <a href="mailto:mail@example.org">mail@example.org</a> dolor.""");
+
+    // Scheme in query
+    Add("www.example.com/redirect?to=https://other.com", """<a href="https://www.example.com/redirect?to=https://other.com">www.example.com/redirect?to=https://other.com</a>""");
+    Add("www.example.org/?ref=https://www.example.com", """<a href="https://www.example.org/?ref=https://www.example.com">www.example.org/?ref=https://www.example.com</a>""");
+    Add("https://www.example.com/redirect?to=https://other.com", """<a href="https://www.example.com/redirect?to=https://other.com">https://www.example.com/redirect?to=https://other.com</a>""");
+    Add("https://www.example.org/?ref=https://www.example.com", """<a href="https://www.example.org/?ref=https://www.example.com">https://www.example.org/?ref=https://www.example.com</a>""");
   }
 }
