@@ -17,6 +17,6 @@ public interface ILinkernizer
   [return: NotNullIfNotNull(nameof(input))]
   string? Linkernize(string? input);
 
-  /// <inheritdoc cref="Linkernize(ReadOnlySpan{char})" />
+  /// <inheritdoc cref="Linkernizer.Linkernize(ReadOnlySpan{char})" />
   string Linkernize(ReadOnlySpan<char> input);
 }
