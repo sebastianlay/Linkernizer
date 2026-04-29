@@ -16,7 +16,9 @@
     <AssemblyVersion>1.0.4</AssemblyVersion>
     <Version>1.0.4</Version>
     <LangVersion>14</LangVersion>
-    <DebugType>embedded</DebugType>
+    <DebugType>portable</DebugType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
