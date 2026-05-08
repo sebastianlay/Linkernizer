@@ -238,9 +238,13 @@ public class Linkernizer : ILinkernizer
       // but often the desired behavior in the *real* world.
       var (offset, length) = TrimExtraCharacters(input, range);
 
+      // Ignore excessively long 'words'.
+      if (length > ushort.MaxValue)
+        continue;
+
       // Check if the word is actually a link and, if so, which type.
       if (TryGetReplacementType(input.Slice(offset, length), out var type))
-        result.Add(new Replacement(offset, length, type));
+        result.Add(new Replacement(offset, (ushort)length, type));
     }
 
     return result;
