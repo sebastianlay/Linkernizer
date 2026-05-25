@@ -46,7 +46,7 @@ You can find more information on [https://www.nuget.org/packages/Linkernizer](ht
 ## Benchmarks
 
 The benchmarks compare the following libraries in their default configuration:
-- [Linkernizer](https://github.com/sebastianlay/Linkernizer) (1.0.5)
+- [Linkernizer](https://github.com/sebastianlay/Linkernizer) (1.0.6)
 - [AutoLink](https://github.com/mganss/AutoLink) (2.0.5)
 - [TextHelper](https://github.com/tylermercier/TextHelper) (0.2.0)
 
@@ -60,21 +60,21 @@ The memory allocated (excluding initial setup):
 
 Keep in mind that the exact values will vary from run to run.
 ```
-| Method                         | Mean         | Error      | StdDev     | Gen0   | Allocated |
-|------------------------------- |-------------:|-----------:|-----------:|-------:|----------:|
-| LinkernizerShortTextNoMatches  |     10.04 ns |   0.031 ns |   0.028 ns |      - |         - |
-| LinkernizerLongTextNoMatches   |     38.89 ns |   0.104 ns |   0.092 ns |      - |         - |
-| LinkernizerShortTextTwoMatches |    644.91 ns |   4.310 ns |   3.599 ns | 0.1411 |     592 B |
-| LinkernizerLongTextFourMatches |  3,248.53 ns |  15.657 ns |  13.880 ns | 0.5493 |    2312 B |
-|------------------------------- |-------------:|-----------:|-----------:|-------:|----------:|
-| AutoLinkShortTextNoMatches     |  1,112.75 ns |   3.894 ns |   3.643 ns | 0.0210 |      88 B |
-| AutoLinkLongTextNoMatches      |  8,240.50 ns |  63.245 ns |  56.065 ns | 0.0153 |      88 B |
-| AutoLinkShortTextTwoMatches    |  1,752.95 ns |   6.943 ns |   5.798 ns | 0.2937 |    1232 B |
-| AutoLinkLongTextFourMatches    |  9,930.48 ns | 103.320 ns |  96.645 ns | 2.0142 |    8448 B |
-|------------------------------- |-------------:|-----------:|-----------:|-------:|----------:|
-| TextHelperShortTextNoMatches   |  2,860.00 ns |   9.203 ns |   7.185 ns | 0.0381 |     168 B |
-| TextHelperLongTextNoMatches    | 20,015.26 ns |  33.143 ns |  25.876 ns | 0.0305 |     168 B |
-| TextHelperShortTextTwoMatches  |  3,962.34 ns |  35.980 ns |  30.045 ns | 0.2441 |    1040 B |
-| TextHelperLongTextFourMatches  | 22,227.44 ns | 123.171 ns | 115.214 ns | 0.7324 |    3136 B |
+| Method                         | Mean          | Error       | StdDev      | Gen0   | Allocated |
+|------------------------------- |--------------:|------------:|------------:|-------:|----------:|
+| LinkernizerShortTextNoMatches  |      9.591 ns |   0.1126 ns |   0.0940 ns |      - |         - |
+| LinkernizerLongTextNoMatches   |     31.349 ns |   0.3125 ns |   0.2923 ns |      - |         - |
+| LinkernizerShortTextTwoMatches |    642.736 ns |  10.4223 ns |   9.7490 ns | 0.2747 |     576 B |
+| LinkernizerLongTextFourMatches |  3,464.762 ns |  65.1401 ns |  66.8941 ns | 1.0948 |    2296 B |
+|------------------------------- |--------------:|------------:|------------:|-------:|----------:|
+| AutoLinkShortTextNoMatches     |    888.333 ns |  13.5546 ns |  12.6790 ns | 0.0420 |      88 B |
+| AutoLinkLongTextNoMatches      |  6,579.750 ns |  83.2998 ns |  77.9186 ns | 0.0381 |      88 B |
+| AutoLinkShortTextTwoMatches    |  1,485.751 ns |  20.6070 ns |  18.2676 ns | 0.5875 |    1232 B |
+| AutoLinkLongTextFourMatches    |  8,308.058 ns | 137.4510 ns | 128.5717 ns | 4.0283 |    8448 B |
+|------------------------------- |--------------:|------------:|------------:|-------:|----------:|
+| TextHelperShortTextNoMatches   |  3,046.595 ns |  17.1640 ns |  16.0552 ns | 0.0801 |     168 B |
+| TextHelperLongTextNoMatches    | 21,997.788 ns | 276.9698 ns | 259.0778 ns | 0.0610 |     168 B |
+| TextHelperShortTextTwoMatches  |  4,308.261 ns |  40.2772 ns |  37.6753 ns | 0.4959 |    1040 B |
+| TextHelperLongTextFourMatches  | 23,032.028 ns | 137.4207 ns | 114.7525 ns | 1.4954 |    3136 B |
 ```
 You can verify the results by running [the same benchmarks](https://github.com/sebastianlay/Linkernizer/blob/main/Linkernizer.Benchmarks/Program.cs) on your machine.
