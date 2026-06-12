@@ -24,7 +24,7 @@ public class Linkernizer : ILinkernizer
 
   // The number of replacements that fit into the stack-allocated buffer
   // before it has to grow to the heap. Chosen to cover realistic inputs
-  // while keeping the buffer small (32 * 8 bytes) for the stack.
+  // while keeping the buffer small (32 * 8 = 256 bytes) for the stack.
   private const int InitialReplacementCapacity = 32;
 
   private static readonly SearchValues<string> Indicators = SearchValues.Create([SchemeDelimiter, DefaultSubdomain, "@"],
@@ -41,7 +41,9 @@ public class Linkernizer : ILinkernizer
     '\u000A', '\u000B', '\u000C', '\u000D', '\u0085'
   );
 
-  private readonly LinkernizerOptions _options = new();
+  private readonly string _defaultScheme;
+  private readonly string _internalHost;
+  private readonly bool _openExternalLinksInNewTab;
 
   /// <summary>
   ///   <para>
@@ -50,6 +52,7 @@ public class Linkernizer : ILinkernizer
   ///   </para>
   ///   <para>
   ///     It is recommended to only create one instance and reuse it across the application.
+  ///     Instances are immutable after construction and safe for concurrent use from multiple threads.
   ///   </para>
   /// </summary>
   /// <param name="action">
@@ -65,22 +68,27 @@ public class Linkernizer : ILinkernizer
   /// <exception cref="ArgumentException">The given options contain invalid values.</exception>
   public Linkernizer(Action<LinkernizerOptions>? action = null)
   {
-    action?.Invoke(_options);
+    var options = new LinkernizerOptions();
+    action?.Invoke(options);
 
-    if (string.IsNullOrWhiteSpace(_options.DefaultScheme))
+    if (string.IsNullOrWhiteSpace(options.DefaultScheme))
       throw new ArgumentException("DefaultScheme must not be null or empty.", nameof(action));
 
-    if (!_options.DefaultScheme.EndsWith(SchemeDelimiter, StringComparison.Ordinal))
+    if (!options.DefaultScheme.EndsWith(SchemeDelimiter, StringComparison.Ordinal))
       throw new ArgumentException("DefaultScheme must end with \"://\".", nameof(action));
 
-    if (_options.InternalHost is null)
+    if (options.InternalHost is null)
       throw new ArgumentException("InternalHost must not be null.", nameof(action));
 
-    if (_options.InternalHost.Contains(SchemeDelimiter, StringComparison.Ordinal))
+    if (options.InternalHost.Contains(SchemeDelimiter, StringComparison.Ordinal))
       throw new ArgumentException("InternalHost must not contain a scheme.", nameof(action));
 
-    _options.InternalHost = _options.InternalHost.TrimEnd('/');
-    _options.MakeReadOnly();
+    options.InternalHost = options.InternalHost.TrimEnd('/');
+    options.MakeReadOnly();
+
+    _defaultScheme = options.DefaultScheme;
+    _internalHost = options.InternalHost;
+    _openExternalLinksInNewTab = options.OpenExternalLinksInNewTab;
   }
 
   /// <summary>
@@ -156,9 +164,8 @@ public class Linkernizer : ILinkernizer
   /// <returns>A newly constructed string with relevant replacements done.</returns>
   private string CreateOutput(ReadOnlySpan<char> input, ReadOnlySpan<Replacement> replacements)
   {
-    var defaultScheme = _options.DefaultScheme;
-    var outputLength = GetOutputLength(input.Length, replacements, defaultScheme.Length);
-    var state = new State(input, replacements, defaultScheme);
+    var outputLength = GetOutputLength(input.Length, replacements, _defaultScheme.Length);
+    var state = new State(input, replacements, _defaultScheme);
 
     return string.Create(outputLength, state, WriteOutput);
   }
@@ -368,7 +375,7 @@ public class Linkernizer : ILinkernizer
     // Not at the beginning, as this would more likely be some sort of handle.
     // Not at the end, as an email address requires a domain after it.
     var firstAtIndex = candidate.IndexOf('@');
-    if (firstAtIndex >= 1 && firstAtIndex < candidate.Length - 1 && firstAtIndex == candidate.LastIndexOf('@'))
+    if (firstAtIndex >= 1 && firstAtIndex < candidate.Length - 1 && !candidate[(firstAtIndex + 1)..].Contains('@'))
     {
       type = candidate.StartsWith(MailToProtocol, StringComparison.OrdinalIgnoreCase)
         ? ReplacementType.EmailWithScheme
@@ -389,7 +396,7 @@ public class Linkernizer : ILinkernizer
   {
     // Treat all links as internal links as there is no difference between
     // internal and external links when they should all open in the same tab.
-    if (!_options.OpenExternalLinksInNewTab)
+    if (!_openExternalLinksInNewTab)
     {
       return withScheme
         ? ReplacementType.InternalWithScheme
@@ -398,7 +405,7 @@ public class Linkernizer : ILinkernizer
 
     // Treat all links as external links when the internal host is not set
     // as the distinction between internal and external is done based on the host.
-    if (string.IsNullOrEmpty(_options.InternalHost))
+    if (string.IsNullOrEmpty(_internalHost))
     {
       return withScheme
         ? ReplacementType.ExternalWithScheme
@@ -428,7 +435,7 @@ public class Linkernizer : ILinkernizer
   {
     var host = GetHost(link, withScheme);
 
-    return host.Equals(_options.InternalHost, StringComparison.OrdinalIgnoreCase);
+    return host.Equals(_internalHost, StringComparison.OrdinalIgnoreCase);
   }
 
   /// <summary>
