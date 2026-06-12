@@ -267,33 +267,44 @@ public class Linkernizer : ILinkernizer
   {
     var (offset, length) = range.GetOffsetAndLength(input.Length);
 
-    // Trim some trailing characters (even though they could technically be part of the URL).
-    while (length > 0 && TrimCharacters.Contains(input[offset + length - 1]))
-      length--;
-
-    // Trim parentheses and brackets in pairs.
-    while (length > 1 && AreParenthesesOrBrackets(input[offset], input[offset + length - 1]))
+    // Trim alternately until nothing is left to trim, so that the
+    // trimming order does not influence the result (as in "(www.example.org.)").
+    while (true)
     {
-      offset++;
-      length -= 2;
-    }
+      // Trim some trailing characters (even though they could technically be part of the URL).
+      if (length > 0 && TrimCharacters.Contains(input[offset + length - 1]))
+      {
+        length--;
+        continue;
+      }
 
-    return (offset, length);
+      // Trim parentheses, brackets and quotes in pairs.
+      if (length > 1 && AreMatchingPair(input[offset], input[offset + length - 1]))
+      {
+        offset++;
+        length -= 2;
+        continue;
+      }
+
+      return (offset, length);
+    }
   }
 
   /// <summary>
   /// Determines if the given characters are a matching pair
-  /// of parentheses or brackets.
+  /// of parentheses, brackets or quotes.
   /// </summary>
   /// <param name="firstChar">The first character of the candidate.</param>
   /// <param name="lastChar">The last character of the candidate.</param>
   /// <returns>True if the two characters are a matching pair.</returns>
-  private static bool AreParenthesesOrBrackets(char firstChar, char lastChar)
+  private static bool AreMatchingPair(char firstChar, char lastChar)
   {
     return (firstChar == '(' && lastChar == ')')
         || (firstChar == '[' && lastChar == ']')
         || (firstChar == '{' && lastChar == '}')
-        || (firstChar == '<' && lastChar == '>');
+        || (firstChar == '<' && lastChar == '>')
+        || (firstChar == '"' && lastChar == '"')
+        || (firstChar == '\'' && lastChar == '\'');
   }
 
   /// <summary>

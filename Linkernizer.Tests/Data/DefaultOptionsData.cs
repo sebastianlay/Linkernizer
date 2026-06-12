@@ -91,6 +91,8 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("(https://www.example.org?example=(example))", """(<a href="https://www.example.org?example=(example)">https://www.example.org?example=(example)</a>)""");
     Add("(https://www.example.org/?example=(example))", """(<a href="https://www.example.org/?example=(example)">https://www.example.org/?example=(example)</a>)""");
     Add("(https://www.example.org/?example=example%5Borg%5D)", """(<a href="https://www.example.org/?example=example%5Borg%5D">https://www.example.org/?example=example%5Borg%5D</a>)""");
+    Add("(https://www.example.org.)", """(<a href="https://www.example.org">https://www.example.org</a>.)""");
+    Add("(www.example.org.)", """(<a href="https://www.example.org">www.example.org</a>.)""");
 
     // Parentheses in context
     Add("Lorem https://www.example.org/example_(example) ipsum", """Lorem <a href="https://www.example.org/example_(example)">https://www.example.org/example_(example)</a> ipsum""");
@@ -101,6 +103,14 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("Lorem (https://www.example.org?example=(example)) ipsum", """Lorem (<a href="https://www.example.org?example=(example)">https://www.example.org?example=(example)</a>) ipsum""");
     Add("Lorem (https://www.example.org/?example=(example)) ipsum", """Lorem (<a href="https://www.example.org/?example=(example)">https://www.example.org/?example=(example)</a>) ipsum""");
     Add("Lorem (https://www.example.org/?example=example%5Borg%5D) ipsum", """Lorem (<a href="https://www.example.org/?example=example%5Borg%5D">https://www.example.org/?example=example%5Borg%5D</a>) ipsum""");
+
+    // Quotes
+    Add("\"www.example.org\"", "\"<a href=\"https://www.example.org\">www.example.org</a>\"");
+    Add("'www.example.org'", "'<a href=\"https://www.example.org\">www.example.org</a>'");
+    Add("\"mail@example.org\"", "\"<a href=\"mailto:mail@example.org\">mail@example.org</a>\"");
+    Add("""Lorem "www.example.org/path" ipsum""", """Lorem "<a href="https://www.example.org/path">www.example.org/path</a>" ipsum""");
+    Add("""Lorem 'https://www.example.org' ipsum""", """Lorem '<a href="https://www.example.org">https://www.example.org</a>' ipsum""");
+    Add("""Lorem "www.example.org". Ipsum.""", """Lorem "<a href="https://www.example.org">www.example.org</a>". Ipsum.""");
 
     // Punctuation
     Add("Lorem https://www.example.org. Ipsum.", """Lorem <a href="https://www.example.org">https://www.example.org</a>. Ipsum.""");
@@ -151,8 +161,6 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     // Markup characters
     Add("""https://example.org/"onclick="alert(1)""", """https://example.org/"onclick="alert(1)""");
     Add("https://www.example.org/<script>", "https://www.example.org/<script>");
-    Add("""Lorem "www.example.org/path" ipsum""", """Lorem "www.example.org/path" ipsum""");
-    Add("\"mail@example.org\"", "\"mail@example.org\"");
     Add("<https://www.example.org>", """<<a href="https://www.example.org">https://www.example.org</a>>""");
 
     // Multiple links
