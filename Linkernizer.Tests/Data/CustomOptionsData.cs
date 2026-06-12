@@ -129,6 +129,13 @@ internal sealed class CustomOptionsData : TheoryData<string?, string?>
     Add("example.org:80/", "example.org:80/");
     Add("www.example.org:80/", """<a href="http://www.example.org:80/" target="_blank">www.example.org:80/</a>""");
     Add("https://www.example.org:80/", """<a href="https://www.example.org:80/" target="_blank">https://www.example.org:80/</a>""");
+    Add("www.example.com:8080", """<a href="http://www.example.com:8080">www.example.com:8080</a>""");
+
+    // User information and IPv6 hosts
+    Add("https://user:pass@www.example.com/example", """<a href="https://user:pass@www.example.com/example">https://user:pass@www.example.com/example</a>""");
+    Add("https://user:pass@www.example.org/example", """<a href="https://user:pass@www.example.org/example" target="_blank">https://user:pass@www.example.org/example</a>""");
+    Add("https://www.example.com@www.example.org/example", """<a href="https://www.example.com@www.example.org/example" target="_blank">https://www.example.com@www.example.org/example</a>""");
+    Add("https://[2001:db8::1]:8080/example", """<a href="https://[2001:db8::1]:8080/example" target="_blank">https://[2001:db8::1]:8080/example</a>""");
 
     // Email
     Add("@example.org", "@example.org");

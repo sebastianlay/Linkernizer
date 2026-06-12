@@ -97,6 +97,26 @@ public class Tests
   }
 
   /// <summary>
+  /// Tests that hosts that are IPv6 addresses are correctly compared with the internal host.
+  /// </summary>
+  [Fact]
+  public void InternalHostWithIPv6AddressTest()
+  {
+    // Arrange
+    var linkernizer = new Linkernizer(options =>
+    {
+      options.InternalHost = "[2001:db8::1]";
+      options.OpenExternalLinksInNewTab = true;
+    });
+
+    // Act — the bracketed host should match the internal host despite the port
+    var result = linkernizer.Linkernize("https://[2001:db8::1]:8080/example");
+
+    // Assert
+    Assert.Equal("""<a href="https://[2001:db8::1]:8080/example">https://[2001:db8::1]:8080/example</a>""", result);
+  }
+
+  /// <summary>
   /// Tests the library with the default options.
   /// </summary>
   /// <param name="input">The value that should be supplied to the library.</param>

@@ -27,7 +27,7 @@ public class Linkernizer : ILinkernizer
   );
   private static readonly SearchValues<char> TrimCharacters = SearchValues.Create('.', ':', '?', '!', ',', ';');
   private static readonly SearchValues<char> ForbiddenCharacters = SearchValues.Create('"', '<', '>');
-  private static readonly SearchValues<char> HostDelimiters = SearchValues.Create('/', ':', '?', '#');
+  private static readonly SearchValues<char> AuthorityDelimiters = SearchValues.Create('/', '?', '#');
   private static readonly SearchValues<char> Whitespaces = SearchValues.Create(
     '\u0020', '\u00A0', '\u1680', '\u2000', '\u2001',
     '\u2002', '\u2003', '\u2004', '\u2005', '\u2006',
@@ -410,17 +410,39 @@ public class Linkernizer : ILinkernizer
   }
 
   /// <summary>
-  /// Returns the host of the given link.
+  /// Returns the host of the given link by parsing the authority component
+  /// (as in "user:pass@www.example.org:8080") without allocating a full URI.
+  /// Hosts that are IPv6 addresses are returned with their enclosing brackets,
+  /// which matches the behavior of <see cref="Uri.Host"/>.
   /// </summary>
   /// <param name="link">The assumed link with or without scheme.</param>
   /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
-  /// <returns>The host of the given link without the scheme.</returns>
+  /// <returns>The host of the given link without the scheme, user information, and port.</returns>
   private static ReadOnlySpan<char> GetHost(ReadOnlySpan<char> link, bool withScheme)
   {
     var linkWithoutScheme = StripScheme(link, withScheme);
-    var hostEnd = linkWithoutScheme.IndexOfAny(HostDelimiters);
 
-    return hostEnd >= 0 ? linkWithoutScheme[..hostEnd] : linkWithoutScheme;
+    // The authority ends at the first slash, question mark, or hash.
+    var authorityEnd = linkWithoutScheme.IndexOfAny(AuthorityDelimiters);
+    var authority = authorityEnd >= 0 ? linkWithoutScheme[..authorityEnd] : linkWithoutScheme;
+
+    // Strip the user information before the last 'at' character. Using the last
+    // one (like browsers do) prevents spoofing the host with "host@actualhost".
+    var userInfoEnd = authority.LastIndexOf('@');
+    if (userInfoEnd >= 0)
+      authority = authority[(userInfoEnd + 1)..];
+
+    // Hosts that are IPv6 addresses are enclosed in brackets
+    // and can contain colons (as in "[2001:db8::1]:8080").
+    if (authority is ['[', ..])
+    {
+      var bracketEnd = authority.IndexOf(']');
+      return bracketEnd >= 0 ? authority[..(bracketEnd + 1)] : authority;
+    }
+
+    // Otherwise the host ends at the colon that separates the port.
+    var portStart = authority.IndexOf(':');
+    return portStart >= 0 ? authority[..portStart] : authority;
   }
 
   /// <summary>
