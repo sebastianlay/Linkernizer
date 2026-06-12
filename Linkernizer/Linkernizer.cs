@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Linkernizer.Internal;
@@ -83,7 +84,7 @@ public class Linkernizer : ILinkernizer
   ///     Wraps links in the given input with HTML hyperlink markup.
   ///   </para>
   ///   <example>
-  ///     Will turn the input <c>https://www.example.org</c> into <c><![CDATA[<a href="https://www.example.org">www.example.org</a>]]></c>.
+  ///     Will turn the input <c>www.example.org</c> into <c><![CDATA[<a href="https://www.example.org">www.example.org</a>]]></c>.
   ///   </example>
   /// </summary>
   /// <param name="input">The input should not already contain HTML.</param>
@@ -106,7 +107,7 @@ public class Linkernizer : ILinkernizer
   ///     Wraps links in the given input with HTML hyperlink markup.
   ///   </para>
   ///   <example>
-  ///     Will turn the input <c>https://www.example.org</c> into <c><![CDATA[<a href="https://www.example.org">www.example.org</a>]]></c>.
+  ///     Will turn the input <c>www.example.org</c> into <c><![CDATA[<a href="https://www.example.org">www.example.org</a>]]></c>.
   ///   </example>
   /// </summary>
   /// <param name="input">The input should not already contain HTML.</param>
@@ -151,6 +152,7 @@ public class Linkernizer : ILinkernizer
   /// <param name="replacements">The list of replacements to be made.</param>
   /// <param name="defaultSchemeLength">The length of the default scheme.</param>
   /// <returns>The exact length of the output string.</returns>
+  /// <exception cref="UnreachableException">A replacement has an unknown type.</exception>
   private static int GetOutputLength(int length, ReadOnlySpan<Replacement> replacements, int defaultSchemeLength)
   {
     foreach (var replacement in replacements)
@@ -172,7 +174,7 @@ public class Linkernizer : ILinkernizer
         ReplacementType.EmailWithoutScheme
           => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + MailToProtocol.Length,
 
-        _ => 0
+        _ => throw new UnreachableException($"Unknown replacement type: {replacement.Type}")
       };
     }
 
@@ -472,6 +474,7 @@ public class Linkernizer : ILinkernizer
   /// <param name="inputSlice">The matched part of the input.</param>
   /// <param name="type">The type of replacement that determines the HTML markup.</param>
   /// <param name="defaultScheme">The default scheme to prepend for links without a scheme.</param>
+  /// <exception cref="UnreachableException">The replacement has an unknown type.</exception>
   private static void WriteReplacement(Span<char> output, ref int position, ReadOnlySpan<char> inputSlice,
     ReplacementType type, ReadOnlySpan<char> defaultScheme)
   {
@@ -504,7 +507,7 @@ public class Linkernizer : ILinkernizer
         Write(output, ref position, OpeningTagEndInternal);
         break;
       default:
-        throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        throw new UnreachableException($"Unknown replacement type: {type}");
     }
 
     Write(output, ref position, inputSlice);
