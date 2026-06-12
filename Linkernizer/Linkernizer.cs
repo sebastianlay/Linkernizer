@@ -26,6 +26,7 @@ public class Linkernizer : ILinkernizer
     StringComparison.OrdinalIgnoreCase
   );
   private static readonly SearchValues<char> TrimCharacters = SearchValues.Create('.', ':', '?', '!', ',', ';');
+  private static readonly SearchValues<char> ForbiddenCharacters = SearchValues.Create('"', '<', '>');
   private static readonly SearchValues<char> HostDelimiters = SearchValues.Create('/', ':', '?', '#');
   private static readonly SearchValues<char> Whitespaces = SearchValues.Create(
     '\u0020', '\u00A0', '\u1680', '\u2000', '\u2001',
@@ -303,6 +304,10 @@ public class Linkernizer : ILinkernizer
 
     // Discard too short candidates as the shortest possible link is either "ab://c" or "a@b.de".
     if (candidate.Length < 6)
+      return false;
+
+    // Discard candidates containing characters that would break out of the generated markup.
+    if (candidate.ContainsAny(ForbiddenCharacters))
       return false;
 
     // We assume a link without a scheme for candidates starting with the common subdomain.

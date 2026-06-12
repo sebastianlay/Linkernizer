@@ -139,6 +139,13 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("irc://example.org:6667/example", """<a href="irc://example.org:6667/example">irc://example.org:6667/example</a>""");
     Add("slack://example?org=example", """<a href="slack://example?org=example">slack://example?org=example</a>""");
 
+    // Markup characters
+    Add("""https://example.org/"onclick="alert(1)""", """https://example.org/"onclick="alert(1)""");
+    Add("https://www.example.org/<script>", "https://www.example.org/<script>");
+    Add("""Lorem "www.example.org/path" ipsum""", """Lorem "www.example.org/path" ipsum""");
+    Add("\"mail@example.org\"", "\"mail@example.org\"");
+    Add("<https://www.example.org>", """<<a href="https://www.example.org">https://www.example.org</a>>""");
+
     // Multiple links
     Add("Lorem www.example.org ipsum mail@example.org dolor.", """Lorem <a href="https://www.example.org">www.example.org</a> ipsum <a href="mailto:mail@example.org">mail@example.org</a> dolor.""");
 

@@ -139,6 +139,13 @@ internal sealed class CustomOptionsData : TheoryData<string?, string?>
     Add("irc://example.org:6667/example", """<a href="irc://example.org:6667/example" target="_blank">irc://example.org:6667/example</a>""");
     Add("slack://example?org=example", """<a href="slack://example?org=example" target="_blank">slack://example?org=example</a>""");
 
+    // Markup characters
+    Add("""https://example.org/"onclick="alert(1)""", """https://example.org/"onclick="alert(1)""");
+    Add("https://www.example.org/<script>", "https://www.example.org/<script>");
+    Add("""Lorem "www.example.org/path" ipsum""", """Lorem "www.example.org/path" ipsum""");
+    Add("\"mail@example.org\"", "\"mail@example.org\"");
+    Add("<https://www.example.org>", """<<a href="https://www.example.org" target="_blank">https://www.example.org</a>>""");
+
     // Multiple links
     Add("Lorem www.example.org ipsum mail@example.org dolor.", """Lorem <a href="http://www.example.org" target="_blank">www.example.org</a> ipsum <a href="mailto:mail@example.org">mail@example.org</a> dolor.""");
 
