@@ -125,6 +125,9 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("mail@example.org", """<a href="mailto:mail@example.org">mail@example.org</a>""");
     Add("mailto:mail@example.org", """<a href="mailto:mail@example.org">mailto:mail@example.org</a>""");
     Add("mail+mail.mail@example.org", """<a href="mailto:mail+mail.mail@example.org">mail+mail.mail@example.org</a>""");
+    Add("someone@", "someone@");
+    Add("foo@bar", """<a href="mailto:foo@bar">foo@bar</a>""");
+    Add("user@[IPv6:2001:db8::1]", """<a href="mailto:user@[IPv6:2001:db8::1]">user@[IPv6:2001:db8::1]</a>""");
 
     // Email in context
     Add("Lorem @example.org ipsum", "Lorem @example.org ipsum");
@@ -138,6 +141,12 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("git://example/org/example.git", """<a href="git://example/org/example.git">git://example/org/example.git</a>""");
     Add("irc://example.org:6667/example", """<a href="irc://example.org:6667/example">irc://example.org:6667/example</a>""");
     Add("slack://example?org=example", """<a href="slack://example?org=example">slack://example?org=example</a>""");
+    Add("ab://c", """<a href="ab://c">ab://c</a>""");
+
+    // Incomplete schemes
+    Add("Always type https:// before the domain", "Always type https:// before the domain");
+    Add("xyz://", "xyz://");
+    Add("://example.org", "://example.org");
 
     // Markup characters
     Add("""https://example.org/"onclick="alert(1)""", """https://example.org/"onclick="alert(1)""");

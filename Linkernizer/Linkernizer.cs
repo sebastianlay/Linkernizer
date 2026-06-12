@@ -317,17 +317,20 @@ public class Linkernizer : ILinkernizer
       return true;
     }
 
-    // We assume a fully qualified link with a scheme if the separator is found anywhere.
-    if (candidate.IndexOf(SchemeDelimiter) >= 0)
+    // We assume a fully qualified link with a scheme if the separator is found anywhere
+    // (with at least one character before it for the scheme and one after it for the host).
+    var delimiterIndex = candidate.IndexOf(SchemeDelimiter);
+    if (delimiterIndex >= 1 && delimiterIndex + SchemeDelimiter.Length < candidate.Length)
     {
       type = GetLinkType(candidate, true);
       return true;
     }
 
-    // We assume an email address if the candidate contains exactly one 'at' character
-    // (that is not at the beginning, as this would more likely be some sort of handle).
+    // We assume an email address if the candidate contains exactly one 'at' character.
+    // Not at the beginning, as this would more likely be some sort of handle.
+    // Not at the end, as an email address requires a domain after it.
     var firstAtIndex = candidate.IndexOf('@');
-    if (firstAtIndex >= 1 && firstAtIndex == candidate.LastIndexOf('@'))
+    if (firstAtIndex >= 1 && firstAtIndex < candidate.Length - 1 && firstAtIndex == candidate.LastIndexOf('@'))
     {
       type = candidate.StartsWith(MailToProtocol, StringComparison.OrdinalIgnoreCase)
         ? ReplacementType.EmailWithScheme
