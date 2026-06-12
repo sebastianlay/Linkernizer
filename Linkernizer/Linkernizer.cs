@@ -99,7 +99,11 @@ public class Linkernizer : ILinkernizer
     if (!input.AsSpan().ContainsAny(Indicators))
       return input;
 
-    return LinkernizeInternal(input);
+    var replacements = GetReplacements(input);
+    if (replacements is null)
+      return input;
+
+    return LinkernizeInternal(input, replacements);
   }
 
   /// <summary>
@@ -121,25 +125,26 @@ public class Linkernizer : ILinkernizer
     if (!input.ContainsAny(Indicators))
       return input.ToString();
 
-    return LinkernizeInternal(input.ToString());
+    var replacements = GetReplacements(input);
+    if (replacements is null)
+      return input.ToString();
+
+    return LinkernizeInternal(input, replacements);
   }
 
   /// <summary>
-  /// Finds the parts that need to be replaced in the given input
-  /// and constructs the output with the replaced values.
+  /// Constructs the output for the given input with the given replacements done.
+  /// The output is built directly from the input span without materializing it as a string.
   /// </summary>
   /// <param name="input">The complete input.</param>
+  /// <param name="replacements">The list of replacements to be made.</param>
   /// <returns>A newly constructed string with relevant replacements done.</returns>
-  private string LinkernizeInternal(string input)
+  private string LinkernizeInternal(ReadOnlySpan<char> input, List<Replacement> replacements)
   {
-    var replacements = GetReplacements(input);
-    if (replacements.Count == 0)
-      return input;
-
     var defaultScheme = _options.DefaultScheme;
     var replacementsSpan = CollectionsMarshal.AsSpan(replacements);
     var outputLength = GetOutputLength(input.Length, replacementsSpan, defaultScheme.Length);
-    var state = new State(input, replacements, defaultScheme);
+    var state = new State(input, replacementsSpan, defaultScheme);
 
     return string.Create(outputLength, state, WriteOutput);
   }
@@ -189,36 +194,33 @@ public class Linkernizer : ILinkernizer
   /// <param name="state">The input, replacements, and default scheme.</param>
   private static void WriteOutput(Span<char> output, State state)
   {
-    var input = state.Input.AsSpan();
-    var replacements = CollectionsMarshal.AsSpan(state.Replacements);
-
     var position = 0;
     var inputIndex = 0;
 
-    foreach (var replacement in replacements)
+    foreach (var replacement in state.Replacements)
     {
       // Copy the part of the original input that leads up
       // to the beginning of the current replacement.
       if (replacement.Offset > inputIndex)
       {
-        var segment = input[inputIndex..replacement.Offset];
+        var segment = state.Input[inputIndex..replacement.Offset];
         segment.CopyTo(output[position..]);
         position += segment.Length;
         inputIndex = replacement.Offset;
       }
 
       // Write the new value of the current replacement.
-      var inputSlice = input.Slice(replacement.Offset, replacement.Length);
+      var inputSlice = state.Input.Slice(replacement.Offset, replacement.Length);
       WriteReplacement(output, ref position, inputSlice, replacement.Type, state.DefaultScheme);
       inputIndex += replacement.Length;
     }
 
     // Check if there is anything remaining.
-    if (inputIndex >= input.Length)
+    if (inputIndex >= state.Input.Length)
       return;
 
     // Copy the remaining part of the original input.
-    var remaining = input[inputIndex..];
+    var remaining = state.Input[inputIndex..];
     remaining.CopyTo(output[position..]);
   }
 
@@ -227,10 +229,12 @@ public class Linkernizer : ILinkernizer
   /// and returns their location in the input and their type.
   /// </summary>
   /// <param name="input">The complete input.</param>
-  /// <returns>A list of parts that need to be replaced.</returns>
-  private List<Replacement> GetReplacements(ReadOnlySpan<char> input)
+  /// <returns>A list of parts that need to be replaced, or null if there are none.</returns>
+  private List<Replacement>? GetReplacements(ReadOnlySpan<char> input)
   {
-    var result = new List<Replacement>();
+    // The list is only allocated lazily so that inputs
+    // without any actual links do not allocate at all.
+    List<Replacement>? result = null;
 
     // Split the input on whitespaces as they are usually
     // the boundary of a part that should be linked.
@@ -252,7 +256,10 @@ public class Linkernizer : ILinkernizer
 
       // Check if the word is actually a link and, if so, which type.
       if (TryGetReplacementType(input.Slice(offset, length), out var type))
+      {
+        result ??= [];
         result.Add(new Replacement(offset, (ushort)length, type));
+      }
     }
 
     return result;

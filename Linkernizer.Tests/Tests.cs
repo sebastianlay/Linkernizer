@@ -158,4 +158,47 @@ public class Tests
     // Assert
     Assert.Equal(expectedOutput, actualOutput);
   }
+
+  /// <summary>
+  /// Tests the span overload of the library with the default options.
+  /// </summary>
+  /// <param name="input">The value that should be supplied to the library.</param>
+  /// <param name="expectedOutput">The value the actual output should match.</param>
+  [Theory]
+  [ClassData(typeof(DefaultOptionsData))]
+  public void DefaultOptionsSpanTest(string? input, string? expectedOutput)
+  {
+    // Arrange
+    var linkernizer = new Linkernizer();
+
+    // Act
+    var actualOutput = linkernizer.Linkernize(input.AsSpan());
+
+    // Assert — a null input is an empty span and therefore yields an empty string
+    Assert.Equal(expectedOutput ?? string.Empty, actualOutput);
+  }
+
+  /// <summary>
+  /// Tests the span overload of the library with custom options.
+  /// </summary>
+  /// <param name="input">The value that should be supplied to the library.</param>
+  /// <param name="expectedOutput">The value the actual output should match.</param>
+  [Theory]
+  [ClassData(typeof(CustomOptionsData))]
+  public void CustomOptionsSpanTest(string? input, string? expectedOutput)
+  {
+    // Arrange
+    var linkernizer = new Linkernizer(options =>
+    {
+      options.OpenExternalLinksInNewTab = true;
+      options.InternalHost = "www.example.com";
+      options.DefaultScheme = "http://";
+    });
+
+    // Act
+    var actualOutput = linkernizer.Linkernize(input.AsSpan());
+
+    // Assert — a null input is an empty span and therefore yields an empty string
+    Assert.Equal(expectedOutput ?? string.Empty, actualOutput);
+  }
 }
