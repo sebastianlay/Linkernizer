@@ -1,8 +1,12 @@
-﻿namespace Linkernizer;
+namespace Linkernizer;
 
 /// <summary>
 ///   <para>
 ///     The options that are used to influence how the HTML markup will be generated.
+///   </para>
+///   <para>
+///     The options become read-only once the instance has been constructed and
+///     any further attempt to change them will throw an <see cref="InvalidOperationException"/>.
 ///   </para>
 ///   <example>
 ///     Usually you should not instantiate this class directly,
@@ -18,6 +22,8 @@
 /// </summary>
 public class LinkernizerOptions
 {
+  private bool _isReadOnly;
+
   /// <summary>
   ///   <para>
   ///     The default URI scheme will be used for links without a scheme specified (like www.example.org).
@@ -29,7 +35,16 @@ public class LinkernizerOptions
   ///     </code>
   ///   </example>
   /// </summary>
-  public string DefaultScheme { get; set; } = "https://";
+  /// <exception cref="InvalidOperationException">The option is changed after the library has been constructed.</exception>
+  public string DefaultScheme
+  {
+    get;
+    set
+    {
+      ThrowIfReadOnly();
+      field = value;
+    }
+  } = "https://";
 
   /// <summary>
   ///   <para>
@@ -40,7 +55,16 @@ public class LinkernizerOptions
   ///     The value should not contain any trailing slashes, for example: <c>www.example.org</c>
   ///   </example>
   /// </summary>
-  public string InternalHost { get; set; } = string.Empty;
+  /// <exception cref="InvalidOperationException">The option is changed after the library has been constructed.</exception>
+  public string InternalHost
+  {
+    get;
+    set
+    {
+      ThrowIfReadOnly();
+      field = value;
+    }
+  } = string.Empty;
 
   /// <summary>
   ///   <para>
@@ -54,5 +78,31 @@ public class LinkernizerOptions
   ///     </code>
   ///   </example>
   /// </summary>
-  public bool OpenExternalLinksInNewTab { get; set; }
+  /// <exception cref="InvalidOperationException">The option is changed after the library has been constructed.</exception>
+  public bool OpenExternalLinksInNewTab
+  {
+    get;
+    set
+    {
+      ThrowIfReadOnly();
+      field = value;
+    }
+  }
+
+  /// <summary>
+  /// Marks the options as read-only so that the validated values
+  /// cannot be changed after the library has been constructed.
+  /// </summary>
+  internal void MakeReadOnly() => _isReadOnly = true;
+
+  /// <summary>
+  /// Ensures that the options can no longer be changed
+  /// once they have been marked as read-only.
+  /// </summary>
+  /// <exception cref="InvalidOperationException">The options are already marked as read-only.</exception>
+  private void ThrowIfReadOnly()
+  {
+    if (_isReadOnly)
+      throw new InvalidOperationException("The options cannot be changed after the instance has been constructed.");
+  }
 }

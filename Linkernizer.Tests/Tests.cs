@@ -44,6 +44,36 @@ public class Tests
   }
 
   /// <summary>
+  /// Tests that a null internal host is rejected during construction.
+  /// </summary>
+  [Fact]
+  public void InvalidInternalHostNullTest()
+  {
+    Assert.Throws<ArgumentException>(() => new Linkernizer(options =>
+    {
+      options.InternalHost = null!;
+    }));
+  }
+
+  /// <summary>
+  /// Tests that the options can no longer be changed after construction,
+  /// as this would bypass the validation done during construction.
+  /// </summary>
+  [Fact]
+  public void OptionsCannotBeChangedAfterConstructionTest()
+  {
+    // Arrange
+    LinkernizerOptions? captured = null;
+    _ = new Linkernizer(options => captured = options);
+
+    // Assert
+    Assert.NotNull(captured);
+    Assert.Throws<InvalidOperationException>(() => { captured.DefaultScheme = "ftp://"; });
+    Assert.Throws<InvalidOperationException>(() => { captured.InternalHost = "www.example.org"; });
+    Assert.Throws<InvalidOperationException>(() => { captured.OpenExternalLinksInNewTab = true; });
+  }
+
+  /// <summary>
   /// Tests that trailing slashes on the internal host are gracefully trimmed during construction.
   /// </summary>
   /// <param name="host">The host value with trailing slashes to test.</param>

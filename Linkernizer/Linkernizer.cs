@@ -57,6 +57,7 @@ public class Linkernizer : ILinkernizer
   ///     </code>
   ///   </example>
   /// </param>
+  /// <exception cref="ArgumentException">The given options contain invalid values.</exception>
   public Linkernizer(Action<LinkernizerOptions>? action = null)
   {
     action?.Invoke(_options);
@@ -67,10 +68,14 @@ public class Linkernizer : ILinkernizer
     if (!_options.DefaultScheme.EndsWith(SchemeDelimiter, StringComparison.Ordinal))
       throw new ArgumentException("DefaultScheme must end with \"://\".", nameof(action));
 
+    if (_options.InternalHost is null)
+      throw new ArgumentException("InternalHost must not be null.", nameof(action));
+
     if (_options.InternalHost.Contains(SchemeDelimiter, StringComparison.Ordinal))
       throw new ArgumentException("InternalHost must not contain a scheme.", nameof(action));
 
     _options.InternalHost = _options.InternalHost.TrimEnd('/');
+    _options.MakeReadOnly();
   }
 
   /// <summary>
