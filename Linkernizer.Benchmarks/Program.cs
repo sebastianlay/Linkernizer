@@ -9,7 +9,7 @@ namespace Linkernizer.Benchmarks;
 /// Compares the following libraries regarding execution time and memory footprint:
 ///   <list type="bullet">
 ///     <item>
-///       <term>Linkernizer (2025)</term>
+///       <term>Linkernizer (2026)</term>
 ///       <description>https://github.com/sebastianlay/linkernizer</description>
 ///     </item>
 ///     <item>

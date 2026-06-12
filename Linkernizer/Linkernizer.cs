@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using Linkernizer.Internal;
 
 namespace Linkernizer;
@@ -22,6 +21,11 @@ public class Linkernizer : ILinkernizer
   private const string OpeningTagEndInternal = "\">";
   private const string OpeningTagEndExternal = "\" target=\"_blank\">";
   private const string ClosingTag = "</a>";
+
+  // The number of replacements that fit into the stack-allocated buffer
+  // before it has to grow to the heap. Chosen to cover realistic inputs
+  // while keeping the buffer small (32 * 8 bytes) for the stack.
+  private const int InitialReplacementCapacity = 32;
 
   private static readonly SearchValues<string> Indicators = SearchValues.Create([SchemeDelimiter, DefaultSubdomain, "@"],
     StringComparison.OrdinalIgnoreCase
@@ -99,11 +103,7 @@ public class Linkernizer : ILinkernizer
     if (!input.AsSpan().ContainsAny(Indicators))
       return input;
 
-    var replacements = GetReplacements(input);
-    if (replacements is null)
-      return input;
-
-    return LinkernizeInternal(input, replacements);
+    return ReplaceLinks(input) ?? input;
   }
 
   /// <summary>
@@ -125,11 +125,26 @@ public class Linkernizer : ILinkernizer
     if (!input.ContainsAny(Indicators))
       return input.ToString();
 
-    var replacements = GetReplacements(input);
-    if (replacements is null)
-      return input.ToString();
+    return ReplaceLinks(input) ?? input.ToString();
+  }
 
-    return LinkernizeInternal(input, replacements);
+  /// <summary>
+  /// Finds all links in the given input and replaces them with HTML hyperlink markup.
+  /// </summary>
+  /// <param name="input">The complete input.</param>
+  /// <returns>
+  /// The output containing the markup, or null when the input contains nothing to replace,
+  /// so that each caller can return the input unchanged without an unnecessary copy.
+  /// </returns>
+  private string? ReplaceLinks(ReadOnlySpan<char> input)
+  {
+    var replacementList = new ReplacementList(stackalloc Replacement[InitialReplacementCapacity]);
+    var hasReplacements = GetReplacements(input, ref replacementList);
+    var output = hasReplacements ? CreateOutput(input, replacementList.Replacements) : null;
+
+    replacementList.Dispose();
+
+    return output;
   }
 
   /// <summary>
@@ -137,14 +152,13 @@ public class Linkernizer : ILinkernizer
   /// The output is built directly from the input span without materializing it as a string.
   /// </summary>
   /// <param name="input">The complete input.</param>
-  /// <param name="replacements">The list of replacements to be made.</param>
+  /// <param name="replacements">The replacements to be made.</param>
   /// <returns>A newly constructed string with relevant replacements done.</returns>
-  private string LinkernizeInternal(ReadOnlySpan<char> input, List<Replacement> replacements)
+  private string CreateOutput(ReadOnlySpan<char> input, ReadOnlySpan<Replacement> replacements)
   {
     var defaultScheme = _options.DefaultScheme;
-    var replacementsSpan = CollectionsMarshal.AsSpan(replacements);
-    var outputLength = GetOutputLength(input.Length, replacementsSpan, defaultScheme.Length);
-    var state = new State(input, replacementsSpan, defaultScheme);
+    var outputLength = GetOutputLength(input.Length, replacements, defaultScheme.Length);
+    var state = new State(input, replacements, defaultScheme);
 
     return string.Create(outputLength, state, WriteOutput);
   }
@@ -226,16 +240,14 @@ public class Linkernizer : ILinkernizer
 
   /// <summary>
   /// Finds all parts of the given input that need to be replaced
-  /// and returns their location in the input and their type.
+  /// and adds their location in the input and their type to the given list.
   /// </summary>
   /// <param name="input">The complete input.</param>
-  /// <returns>A list of parts that need to be replaced, or null if there are none.</returns>
-  private List<Replacement>? GetReplacements(ReadOnlySpan<char> input)
+  /// <param name="replacements">The list that collects the replacements.</param>
+  private bool GetReplacements(ReadOnlySpan<char> input, ref ReplacementList replacements)
   {
-    // The list is only allocated lazily so that inputs
-    // without any actual links do not allocate at all.
-    List<Replacement>? result = null;
-
+    var hasReplacements = false;
+    
     // Split the input on whitespaces as they are usually
     // the boundary of a part that should be linked.
     // We assume spaces in URLs to be URL-encoded.
@@ -255,14 +267,15 @@ public class Linkernizer : ILinkernizer
         continue;
 
       // Check if the word is actually a link and, if so, which type.
-      if (TryGetReplacementType(input.Slice(offset, length), out var type))
-      {
-        result ??= [];
-        result.Add(new Replacement(offset, (ushort)length, type));
-      }
+      var candidate = input.Slice(offset, length);
+      if (!TryGetReplacementType(candidate, out var type))
+        continue;
+
+      replacements.Add(new Replacement(offset, (ushort)length, type));
+      hasReplacements = true;
     }
 
-    return result;
+    return hasReplacements;
   }
 
   /// <summary>

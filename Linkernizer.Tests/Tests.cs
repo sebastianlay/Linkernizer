@@ -117,6 +117,23 @@ public class Tests
   }
 
   /// <summary>
+  /// Tests that inputs with a large number of links are handled correctly,
+  /// as these no longer fit into the initial stack-allocated buffer.
+  /// </summary>
+  [Fact]
+  public void ManyLinksTest()
+  {
+    // Arrange
+    var linkernizer = new Linkernizer();
+    var input = string.Join(' ', Enumerable.Repeat("www.example.org", 100));
+    var expected = string.Join(' ', Enumerable.Repeat("""<a href="https://www.example.org">www.example.org</a>""", 100));
+
+    // Act & Assert
+    Assert.Equal(expected, linkernizer.Linkernize(input));
+    Assert.Equal(expected, linkernizer.Linkernize(input.AsSpan()));
+  }
+
+  /// <summary>
   /// Tests the library with the default options.
   /// </summary>
   /// <param name="input">The value that should be supplied to the library.</param>
