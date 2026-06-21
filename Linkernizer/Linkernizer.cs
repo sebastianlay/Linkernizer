@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Linkernizer.Internal;
@@ -32,6 +33,13 @@ public class Linkernizer : ILinkernizer
   );
   private static readonly SearchValues<char> TrimCharacters = SearchValues.Create('.', ':', '?', '!', ',', ';');
   private static readonly SearchValues<char> ForbiddenCharacters = SearchValues.Create('"', '<', '>');
+
+  // Schemes that could execute scripts when the link is clicked. The span alternate
+  // lookup allows checking a candidate's scheme without allocating it as a string.
+  private static readonly FrozenSet<string>.AlternateLookup<ReadOnlySpan<char>> DangerousSchemes = FrozenSet.Create(
+    StringComparer.OrdinalIgnoreCase, "javascript", "vbscript", "data")
+    .GetAlternateLookup<ReadOnlySpan<char>>();
+
   private static readonly SearchValues<char> AuthorityDelimiters = SearchValues.Create('/', '?', '#');
   private static readonly SearchValues<char> Whitespaces = SearchValues.Create(
     '\u0020', '\u00A0', '\u1680', '\u2000', '\u2001',
@@ -254,7 +262,7 @@ public class Linkernizer : ILinkernizer
   private bool GetReplacements(ReadOnlySpan<char> input, ref ReplacementList replacements)
   {
     var hasReplacements = false;
-    
+
     // Split the input on whitespaces as they are usually
     // the boundary of a part that should be linked.
     // We assume spaces in URLs to be URL-encoded.
@@ -367,6 +375,11 @@ public class Linkernizer : ILinkernizer
     var delimiterIndex = candidate.IndexOf(SchemeDelimiter);
     if (delimiterIndex >= 1 && delimiterIndex + SchemeDelimiter.Length < candidate.Length)
     {
+      // Reject schemes that could execute scripts when the link is clicked,
+      // as these would otherwise allow XSS attacks (as in "javascript://...").
+      if (DangerousSchemes.Contains(candidate[..delimiterIndex]))
+        return false;
+
       type = GetLinkType(candidate, true);
       return true;
     }

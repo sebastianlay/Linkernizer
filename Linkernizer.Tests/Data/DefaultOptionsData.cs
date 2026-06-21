@@ -165,6 +165,15 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("xyz://", "xyz://");
     Add("://example.org", "://example.org");
 
+    // Dangerous schemes (must not be turned into clickable links)
+    Add("javascript://%0aalert(1)", "javascript://%0aalert(1)");
+    Add("JavaScript://%0aalert(document.domain)", "JavaScript://%0aalert(document.domain)");
+    Add("vbscript://x/x", "vbscript://x/x");
+    Add("data://text/html;base64,ABC", "data://text/html;base64,ABC");
+    Add("Lorem javascript://%0aalert(1) ipsum", "Lorem javascript://%0aalert(1) ipsum");
+    // A dangerous scheme inside the query is harmless as only the leading scheme matters
+    Add("https://www.example.org/?u=javascript://x", """<a href="https://www.example.org/?u=javascript://x">https://www.example.org/?u=javascript://x</a>""");
+
     // Markup characters
     Add("""https://example.org/"onclick="alert(1)""", """https://example.org/"onclick="alert(1)""");
     Add("https://www.example.org/<script>", "https://www.example.org/<script>");
