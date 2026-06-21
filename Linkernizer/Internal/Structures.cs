@@ -24,7 +24,7 @@ internal readonly ref struct State(ReadOnlySpan<char> input, ReadOnlySpan<Replac
 /// <summary>
 /// Represents a part of the original input that will be replaced.
 /// </summary>
-/// <param name="Offset">The offset to the start of the original input.</param>
+/// <param name="Offset">The offset of the match from the start of the original input.</param>
 /// <param name="Length">The length of the match in the original input.</param>
 /// <param name="Type">The type of the match that determines how the match will be replaced in the output.</param>
 internal readonly record struct Replacement(int Offset, ushort Length, ReplacementType Type);

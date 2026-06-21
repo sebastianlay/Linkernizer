@@ -28,6 +28,9 @@ public class Linkernizer : ILinkernizer
   // while keeping the buffer small (32 * 8 = 256 bytes) for the stack.
   private const int InitialReplacementCapacity = 32;
 
+  // The shortest possible link is either "ab://c" or "a@b.de".
+  private const int MinimumLinkLength = 6;
+
   private static readonly SearchValues<string> Indicators = SearchValues.Create([SchemeDelimiter, DefaultSubdomain, "@"],
     StringComparison.OrdinalIgnoreCase
   );
@@ -104,7 +107,8 @@ public class Linkernizer : ILinkernizer
   ///     Wraps links in the given input with HTML hyperlink markup.
   ///   </para>
   ///   <example>
-  ///     Will turn the input <c>www.example.org</c> into <c><![CDATA[<a href="https://www.example.org">www.example.org</a>]]></c>.
+  ///     Will turn the input <c>www.example.org</c> into
+  ///     <c><![CDATA[<a href="https://www.example.org">www.example.org</a>]]></c>.
   ///   </example>
   /// </summary>
   /// <param name="input">The input should not already contain HTML.</param>
@@ -127,7 +131,8 @@ public class Linkernizer : ILinkernizer
   ///     Wraps links in the given input with HTML hyperlink markup.
   ///   </para>
   ///   <example>
-  ///     Will turn the input <c>www.example.org</c> into <c><![CDATA[<a href="https://www.example.org">www.example.org</a>]]></c>.
+  ///     Will turn the input <c>www.example.org</c> into
+  ///     <c><![CDATA[<a href="https://www.example.org">www.example.org</a>]]></c>.
   ///   </example>
   /// </summary>
   /// <param name="input">The input should not already contain HTML.</param>
@@ -155,9 +160,13 @@ public class Linkernizer : ILinkernizer
   private string? ReplaceLinks(ReadOnlySpan<char> input)
   {
     var replacementList = new ReplacementList(stackalloc Replacement[InitialReplacementCapacity]);
-    var hasReplacements = GetReplacements(input, ref replacementList);
-    var output = hasReplacements ? CreateOutput(input, replacementList.Replacements) : null;
 
+    // Without any replacements the list never grew beyond the stack-allocated
+    // buffer, so there is no pooled array to return and nothing to dispose.
+    if (!GetReplacements(input, ref replacementList))
+      return null;
+
+    var output = CreateOutput(input, replacementList.Replacements);
     replacementList.Dispose();
 
     return output;
@@ -259,6 +268,7 @@ public class Linkernizer : ILinkernizer
   /// </summary>
   /// <param name="input">The complete input.</param>
   /// <param name="replacements">The list that collects the replacements.</param>
+  /// <returns>True if at least one replacement was found and added to the list.</returns>
   private bool GetReplacements(ReadOnlySpan<char> input, ref ReplacementList replacements)
   {
     var hasReplacements = false;
@@ -336,12 +346,16 @@ public class Linkernizer : ILinkernizer
   /// <returns>True if the two characters are a matching pair.</returns>
   private static bool AreMatchingPair(char firstChar, char lastChar)
   {
-    return (firstChar == '(' && lastChar == ')')
-        || (firstChar == '[' && lastChar == ']')
-        || (firstChar == '{' && lastChar == '}')
-        || (firstChar == '<' && lastChar == '>')
-        || (firstChar == '"' && lastChar == '"')
-        || (firstChar == '\'' && lastChar == '\'');
+    return firstChar switch
+    {
+      '(' => lastChar == ')',
+      '[' => lastChar == ']',
+      '{' => lastChar == '}',
+      '<' => lastChar == '>',
+      '"' => lastChar == '"',
+      '\'' => lastChar == '\'',
+      _ => false
+    };
   }
 
   /// <summary>
@@ -355,8 +369,8 @@ public class Linkernizer : ILinkernizer
   {
     type = default;
 
-    // Discard too short candidates as the shortest possible link is either "ab://c" or "a@b.de".
-    if (candidate.Length < 6)
+    // Discard too short candidates that cannot possibly contain a link.
+    if (candidate.Length < MinimumLinkLength)
       return false;
 
     // Discard candidates containing characters that would break out of the generated markup.
@@ -407,47 +421,33 @@ public class Linkernizer : ILinkernizer
   /// <returns>The type of the link so that it can be properly replaced later.</returns>
   private ReplacementType GetLinkType(ReadOnlySpan<char> link, bool withScheme)
   {
-    // Treat all links as internal links as there is no difference between
-    // internal and external links when they should all open in the same tab.
-    if (!_openExternalLinksInNewTab)
-    {
-      return withScheme
-        ? ReplacementType.InternalWithScheme
-        : ReplacementType.InternalWithoutScheme;
-    }
+    // Links are internal when they should not open in a new tab,
+    // or when their host matches the configured internal host.
+    var isInternal = !_openExternalLinksInNewTab || IsInternalHost(link, withScheme);
 
-    // Treat all links as external links when the internal host is not set
-    // as the distinction between internal and external is done based on the host.
-    if (string.IsNullOrEmpty(_internalHost))
+    return (isInternal, withScheme) switch
     {
-      return withScheme
-        ? ReplacementType.ExternalWithScheme
-        : ReplacementType.ExternalWithoutScheme;
-    }
-
-    // Try to get the host from the link and compare it to the given internal host.
-    if (IsInternalHost(link, withScheme))
-    {
-      return withScheme
-        ? ReplacementType.InternalWithScheme
-        : ReplacementType.InternalWithoutScheme;
-    }
-
-    return withScheme
-      ? ReplacementType.ExternalWithScheme
-      : ReplacementType.ExternalWithoutScheme;
+      (true, true) => ReplacementType.InternalWithScheme,
+      (true, false) => ReplacementType.InternalWithoutScheme,
+      (false, true) => ReplacementType.ExternalWithScheme,
+      (false, false) => ReplacementType.ExternalWithoutScheme
+    };
   }
 
   /// <summary>
   /// Determines if the host of the given link matches the internal host given in the options.
+  /// Always returns false when no internal host is configured, as the distinction between
+  /// internal and external links is then meaningless and all links are treated as external.
   /// </summary>
   /// <param name="link">The assumed link with or without scheme.</param>
   /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
   /// <returns>True if the host of the link matches the internal host of the options.</returns>
   private bool IsInternalHost(ReadOnlySpan<char> link, bool withScheme)
   {
-    var host = GetHost(link, withScheme);
+    if (string.IsNullOrEmpty(_internalHost))
+      return false;
 
+    var host = GetHost(link, withScheme);
     return host.Equals(_internalHost, StringComparison.OrdinalIgnoreCase);
   }
 
@@ -495,11 +495,11 @@ public class Linkernizer : ILinkernizer
   /// <returns>The link without the scheme.</returns>
   private static ReadOnlySpan<char> StripScheme(ReadOnlySpan<char> link, bool withScheme)
   {
-    // return the link immediately in case we know that it does not contain a scheme
+    // Return the link immediately in case we know that it does not contain a scheme.
     if (!withScheme)
       return link;
 
-    // otherwise find the end of the scheme and strip it from the link
+    // Otherwise find the end of the scheme and strip it from the link.
     var schemeEnd = link.IndexOf(SchemeDelimiter);
     var hostStart = schemeEnd >= 0 ? schemeEnd + SchemeDelimiter.Length : 0;
 
