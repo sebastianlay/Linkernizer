@@ -14,8 +14,8 @@
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <Description>The (possibly best) .NET library for automatically linking URLs and email addresses</Description>
     <PackageTags>autolink;linkify;linkification;links;url;email;hyperlink;anchor;html;markup</PackageTags>
-    <AssemblyVersion>1.1.0</AssemblyVersion>
-    <Version>1.1.0</Version>
+    <AssemblyVersion>1.2.0</AssemblyVersion>
+    <Version>1.2.0</Version>
     <LangVersion>14</LangVersion>
     <DebugType>portable</DebugType>
     <IncludeSymbols>true</IncludeSymbols>
