@@ -165,6 +165,7 @@ public class Tests
     var linkernizer = new Linkernizer(options =>
     {
       options.OpenExternalLinksInNewTab = true;
+      options.NoReferrerOnExternalLinks = false;
       options.InternalHost = "www.example.com";
       options.DefaultScheme = "http://";
     });
@@ -217,5 +218,29 @@ public class Tests
 
     // Assert — a null input is an empty span and therefore yields an empty string
     Assert.Equal(expectedOutput ?? string.Empty, actualOutput);
+  }
+
+  /// <summary>
+  /// Tests that external links get "noreferrer" in addition to the always-present "noopener"
+  /// when the option is enabled, while internal links still receive no rel attribute at all.
+  /// </summary>
+  [Fact]
+  public void NoReferrerOnExternalLinksTest()
+  {
+    // Arrange
+    var linkernizer = new Linkernizer(options =>
+    {
+      options.OpenExternalLinksInNewTab = true;
+      options.NoReferrerOnExternalLinks = true;
+      options.InternalHost = "www.example.com";
+    });
+
+    // Act
+    var externalLink = linkernizer.Linkernize("https://www.example.org");
+    var internalLink = linkernizer.Linkernize("https://www.example.com");
+
+    // Assert
+    Assert.Equal("""<a href="https://www.example.org" target="_blank" rel="noopener noreferrer">https://www.example.org</a>""", externalLink);
+    Assert.Equal("""<a href="https://www.example.com">https://www.example.com</a>""", internalLink);
   }
 }

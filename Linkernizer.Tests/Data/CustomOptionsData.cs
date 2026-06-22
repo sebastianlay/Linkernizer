@@ -21,9 +21,9 @@ internal sealed class CustomOptionsData : TheoryData<string?, string?>
 
     // Basic URLs
     Add("example.org", "example.org");
-    Add("www.example.org", """<a href="http://www.example.org" target="_blank">www.example.org</a>""");
-    Add("http://www.example.org", """<a href="http://www.example.org" target="_blank">http://www.example.org</a>""");
-    Add("https://www.example.org", """<a href="https://www.example.org" target="_blank">https://www.example.org</a>""");
+    Add("www.example.org", """<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>""");
+    Add("http://www.example.org", """<a href="http://www.example.org" target="_blank" rel="noopener">http://www.example.org</a>""");
+    Add("https://www.example.org", """<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>""");
     Add("example.com", "example.com");
     Add("www.example.com", """<a href="http://www.example.com">www.example.com</a>""");
     Add("http://www.example.com", """<a href="http://www.example.com">http://www.example.com</a>""");
@@ -31,111 +31,111 @@ internal sealed class CustomOptionsData : TheoryData<string?, string?>
 
     // Basic URLs in context
     Add("Lorem example.org ipsum", "Lorem example.org ipsum");
-    Add("Lorem www.example.org ipsum", """Lorem <a href="http://www.example.org" target="_blank">www.example.org</a> ipsum""");
-    Add("Lorem https://www.example.org ipsum", """Lorem <a href="https://www.example.org" target="_blank">https://www.example.org</a> ipsum""");
+    Add("Lorem www.example.org ipsum", """Lorem <a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a> ipsum""");
+    Add("Lorem https://www.example.org ipsum", """Lorem <a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a> ipsum""");
     Add("Lorem example.com ipsum", "Lorem example.com ipsum");
     Add("Lorem www.example.com ipsum", """Lorem <a href="http://www.example.com">www.example.com</a> ipsum""");
     Add("Lorem https://www.example.com ipsum", """Lorem <a href="https://www.example.com">https://www.example.com</a> ipsum""");
 
     // Leading and trailing whitespaces
     Add(" example.org ", " example.org ");
-    Add(" www.example.org ", " <a href=\"http://www.example.org\" target=\"_blank\">www.example.org</a> ");
-    Add(" https://www.example.org ", " <a href=\"https://www.example.org\" target=\"_blank\">https://www.example.org</a> ");
+    Add(" www.example.org ", " <a href=\"http://www.example.org\" target=\"_blank\" rel=\"noopener\">www.example.org</a> ");
+    Add(" https://www.example.org ", " <a href=\"https://www.example.org\" target=\"_blank\" rel=\"noopener\">https://www.example.org</a> ");
     Add("\u00A0example.org\u00A0", "\u00A0example.org\u00A0");
-    Add("\u00A0www.example.org\u00A0", "\u00A0<a href=\"http://www.example.org\" target=\"_blank\">www.example.org</a>\u00A0");
-    Add("\u00A0https://www.example.org\u00A0", "\u00A0<a href=\"https://www.example.org\" target=\"_blank\">https://www.example.org</a>\u00A0");
+    Add("\u00A0www.example.org\u00A0", "\u00A0<a href=\"http://www.example.org\" target=\"_blank\" rel=\"noopener\">www.example.org</a>\u00A0");
+    Add("\u00A0https://www.example.org\u00A0", "\u00A0<a href=\"https://www.example.org\" target=\"_blank\" rel=\"noopener\">https://www.example.org</a>\u00A0");
     Add("\nexample.org\n", "\nexample.org\n");
-    Add("\nwww.example.org\n", "\n<a href=\"http://www.example.org\" target=\"_blank\">www.example.org</a>\n");
-    Add("\nhttps://www.example.org\n", "\n<a href=\"https://www.example.org\" target=\"_blank\">https://www.example.org</a>\n");
+    Add("\nwww.example.org\n", "\n<a href=\"http://www.example.org\" target=\"_blank\" rel=\"noopener\">www.example.org</a>\n");
+    Add("\nhttps://www.example.org\n", "\n<a href=\"https://www.example.org\" target=\"_blank\" rel=\"noopener\">https://www.example.org</a>\n");
 
     // Leading and trailing whitespaces in context
     Add(" Lorem example.org ipsum ", " Lorem example.org ipsum ");
-    Add(" Lorem www.example.org ipsum ", " Lorem <a href=\"http://www.example.org\" target=\"_blank\">www.example.org</a> ipsum ");
-    Add(" Lorem https://www.example.org ipsum ", " Lorem <a href=\"https://www.example.org\" target=\"_blank\">https://www.example.org</a> ipsum ");
+    Add(" Lorem www.example.org ipsum ", " Lorem <a href=\"http://www.example.org\" target=\"_blank\" rel=\"noopener\">www.example.org</a> ipsum ");
+    Add(" Lorem https://www.example.org ipsum ", " Lorem <a href=\"https://www.example.org\" target=\"_blank\" rel=\"noopener\">https://www.example.org</a> ipsum ");
     Add("\u00A0Lorem\u00A0example.org\u00A0ipsum\u00A0", "\u00A0Lorem\u00A0example.org\u00A0ipsum\u00A0");
-    Add("\u00A0Lorem\u00A0www.example.org\u00A0ipsum\u00A0", "\u00A0Lorem\u00A0<a href=\"http://www.example.org\" target=\"_blank\">www.example.org</a>\u00A0ipsum\u00A0");
-    Add("\u00A0Lorem\u00A0https://www.example.org\u00A0ipsum\u00A0", "\u00A0Lorem\u00A0<a href=\"https://www.example.org\" target=\"_blank\">https://www.example.org</a>\u00A0ipsum\u00A0");
+    Add("\u00A0Lorem\u00A0www.example.org\u00A0ipsum\u00A0", "\u00A0Lorem\u00A0<a href=\"http://www.example.org\" target=\"_blank\" rel=\"noopener\">www.example.org</a>\u00A0ipsum\u00A0");
+    Add("\u00A0Lorem\u00A0https://www.example.org\u00A0ipsum\u00A0", "\u00A0Lorem\u00A0<a href=\"https://www.example.org\" target=\"_blank\" rel=\"noopener\">https://www.example.org</a>\u00A0ipsum\u00A0");
     Add("\nLorem\nexample.org\nipsum\n", "\nLorem\nexample.org\nipsum\n");
-    Add("\nLorem\nwww.example.org\nipsum\n", "\nLorem\n<a href=\"http://www.example.org\" target=\"_blank\">www.example.org</a>\nipsum\n");
-    Add("\nLorem\nhttps://www.example.org\nipsum\n", "\nLorem\n<a href=\"https://www.example.org\" target=\"_blank\">https://www.example.org</a>\nipsum\n");
+    Add("\nLorem\nwww.example.org\nipsum\n", "\nLorem\n<a href=\"http://www.example.org\" target=\"_blank\" rel=\"noopener\">www.example.org</a>\nipsum\n");
+    Add("\nLorem\nhttps://www.example.org\nipsum\n", "\nLorem\n<a href=\"https://www.example.org\" target=\"_blank\" rel=\"noopener\">https://www.example.org</a>\nipsum\n");
 
     // Trailing characters
-    Add("https://www.example.org/", """<a href="https://www.example.org/" target="_blank">https://www.example.org/</a>""");
-    Add("https://www.example.org?", """<a href="https://www.example.org" target="_blank">https://www.example.org</a>?""");
-    Add("https://www.example.org#", """<a href="https://www.example.org#" target="_blank">https://www.example.org#</a>""");
-    Add("https://www.example.org/example", """<a href="https://www.example.org/example" target="_blank">https://www.example.org/example</a>""");
-    Add("https://www.example.org/example/", """<a href="https://www.example.org/example/" target="_blank">https://www.example.org/example/</a>""");
-    Add("https://www.example.org/example?", """<a href="https://www.example.org/example" target="_blank">https://www.example.org/example</a>?""");
-    Add("https://www.example.org/example#", """<a href="https://www.example.org/example#" target="_blank">https://www.example.org/example#</a>""");
-    Add("https://www.example.org/example_example", """<a href="https://www.example.org/example_example" target="_blank">https://www.example.org/example_example</a>""");
-    Add("https://www.example.org/example_example/", """<a href="https://www.example.org/example_example/" target="_blank">https://www.example.org/example_example/</a>""");
-    Add("https://www.example.org/example_example?", """<a href="https://www.example.org/example_example" target="_blank">https://www.example.org/example_example</a>?""");
-    Add("https://www.example.org/example_example#", """<a href="https://www.example.org/example_example#" target="_blank">https://www.example.org/example_example#</a>""");
+    Add("https://www.example.org/", """<a href="https://www.example.org/" target="_blank" rel="noopener">https://www.example.org/</a>""");
+    Add("https://www.example.org?", """<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>?""");
+    Add("https://www.example.org#", """<a href="https://www.example.org#" target="_blank" rel="noopener">https://www.example.org#</a>""");
+    Add("https://www.example.org/example", """<a href="https://www.example.org/example" target="_blank" rel="noopener">https://www.example.org/example</a>""");
+    Add("https://www.example.org/example/", """<a href="https://www.example.org/example/" target="_blank" rel="noopener">https://www.example.org/example/</a>""");
+    Add("https://www.example.org/example?", """<a href="https://www.example.org/example" target="_blank" rel="noopener">https://www.example.org/example</a>?""");
+    Add("https://www.example.org/example#", """<a href="https://www.example.org/example#" target="_blank" rel="noopener">https://www.example.org/example#</a>""");
+    Add("https://www.example.org/example_example", """<a href="https://www.example.org/example_example" target="_blank" rel="noopener">https://www.example.org/example_example</a>""");
+    Add("https://www.example.org/example_example/", """<a href="https://www.example.org/example_example/" target="_blank" rel="noopener">https://www.example.org/example_example/</a>""");
+    Add("https://www.example.org/example_example?", """<a href="https://www.example.org/example_example" target="_blank" rel="noopener">https://www.example.org/example_example</a>?""");
+    Add("https://www.example.org/example_example#", """<a href="https://www.example.org/example_example#" target="_blank" rel="noopener">https://www.example.org/example_example#</a>""");
 
     // Trailing characters in context
-    Add("Lorem https://www.example.org/ ipsum", """Lorem <a href="https://www.example.org/" target="_blank">https://www.example.org/</a> ipsum""");
-    Add("Lorem https://www.example.org// ipsum", """Lorem <a href="https://www.example.org//" target="_blank">https://www.example.org//</a> ipsum""");
-    Add("Lorem https://www.example.org/example ipsum", """Lorem <a href="https://www.example.org/example" target="_blank">https://www.example.org/example</a> ipsum""");
-    Add("Lorem https://www.example.org/example/ ipsum", """Lorem <a href="https://www.example.org/example/" target="_blank">https://www.example.org/example/</a> ipsum""");
-    Add("Lorem https://www.example.org/example// ipsum", """Lorem <a href="https://www.example.org/example//" target="_blank">https://www.example.org/example//</a> ipsum""");
-    Add("Lorem https://www.example.org/example_example ipsum", """Lorem <a href="https://www.example.org/example_example" target="_blank">https://www.example.org/example_example</a> ipsum""");
-    Add("Lorem https://www.example.org/example_example/ ipsum", """Lorem <a href="https://www.example.org/example_example/" target="_blank">https://www.example.org/example_example/</a> ipsum""");
-    Add("Lorem https://www.example.org/example_example// ipsum", """Lorem <a href="https://www.example.org/example_example//" target="_blank">https://www.example.org/example_example//</a> ipsum""");
+    Add("Lorem https://www.example.org/ ipsum", """Lorem <a href="https://www.example.org/" target="_blank" rel="noopener">https://www.example.org/</a> ipsum""");
+    Add("Lorem https://www.example.org// ipsum", """Lorem <a href="https://www.example.org//" target="_blank" rel="noopener">https://www.example.org//</a> ipsum""");
+    Add("Lorem https://www.example.org/example ipsum", """Lorem <a href="https://www.example.org/example" target="_blank" rel="noopener">https://www.example.org/example</a> ipsum""");
+    Add("Lorem https://www.example.org/example/ ipsum", """Lorem <a href="https://www.example.org/example/" target="_blank" rel="noopener">https://www.example.org/example/</a> ipsum""");
+    Add("Lorem https://www.example.org/example// ipsum", """Lorem <a href="https://www.example.org/example//" target="_blank" rel="noopener">https://www.example.org/example//</a> ipsum""");
+    Add("Lorem https://www.example.org/example_example ipsum", """Lorem <a href="https://www.example.org/example_example" target="_blank" rel="noopener">https://www.example.org/example_example</a> ipsum""");
+    Add("Lorem https://www.example.org/example_example/ ipsum", """Lorem <a href="https://www.example.org/example_example/" target="_blank" rel="noopener">https://www.example.org/example_example/</a> ipsum""");
+    Add("Lorem https://www.example.org/example_example// ipsum", """Lorem <a href="https://www.example.org/example_example//" target="_blank" rel="noopener">https://www.example.org/example_example//</a> ipsum""");
 
     // Parentheses
-    Add("https://www.example.org/example_(example)", """<a href="https://www.example.org/example_(example)" target="_blank">https://www.example.org/example_(example)</a>""");
-    Add("https://www.example.org?example=(example)", """<a href="https://www.example.org?example=(example)" target="_blank">https://www.example.org?example=(example)</a>""");
-    Add("https://www.example.org/?example=(example)", """<a href="https://www.example.org/?example=(example)" target="_blank">https://www.example.org/?example=(example)</a>""");
-    Add("https://www.example.org/?example=example%5Borg%5D", """<a href="https://www.example.org/?example=example%5Borg%5D" target="_blank">https://www.example.org/?example=example%5Borg%5D</a>""");
-    Add("(https://www.example.org/example_(example))", """(<a href="https://www.example.org/example_(example)" target="_blank">https://www.example.org/example_(example)</a>)""");
-    Add("(https://www.example.org?example=(example))", """(<a href="https://www.example.org?example=(example)" target="_blank">https://www.example.org?example=(example)</a>)""");
-    Add("(https://www.example.org/?example=(example))", """(<a href="https://www.example.org/?example=(example)" target="_blank">https://www.example.org/?example=(example)</a>)""");
-    Add("(https://www.example.org/?example=example%5Borg%5D)", """(<a href="https://www.example.org/?example=example%5Borg%5D" target="_blank">https://www.example.org/?example=example%5Borg%5D</a>)""");
-    Add("(https://www.example.org.)", """(<a href="https://www.example.org" target="_blank">https://www.example.org</a>.)""");
-    Add("(www.example.org.)", """(<a href="http://www.example.org" target="_blank">www.example.org</a>.)""");
+    Add("https://www.example.org/example_(example)", """<a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>""");
+    Add("https://www.example.org?example=(example)", """<a href="https://www.example.org?example=(example)" target="_blank" rel="noopener">https://www.example.org?example=(example)</a>""");
+    Add("https://www.example.org/?example=(example)", """<a href="https://www.example.org/?example=(example)" target="_blank" rel="noopener">https://www.example.org/?example=(example)</a>""");
+    Add("https://www.example.org/?example=example%5Borg%5D", """<a href="https://www.example.org/?example=example%5Borg%5D" target="_blank" rel="noopener">https://www.example.org/?example=example%5Borg%5D</a>""");
+    Add("(https://www.example.org/example_(example))", """(<a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>)""");
+    Add("(https://www.example.org?example=(example))", """(<a href="https://www.example.org?example=(example)" target="_blank" rel="noopener">https://www.example.org?example=(example)</a>)""");
+    Add("(https://www.example.org/?example=(example))", """(<a href="https://www.example.org/?example=(example)" target="_blank" rel="noopener">https://www.example.org/?example=(example)</a>)""");
+    Add("(https://www.example.org/?example=example%5Borg%5D)", """(<a href="https://www.example.org/?example=example%5Borg%5D" target="_blank" rel="noopener">https://www.example.org/?example=example%5Borg%5D</a>)""");
+    Add("(https://www.example.org.)", """(<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>.)""");
+    Add("(www.example.org.)", """(<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>.)""");
 
     // Parentheses in context
-    Add("Lorem https://www.example.org/example_(example) ipsum", """Lorem <a href="https://www.example.org/example_(example)" target="_blank">https://www.example.org/example_(example)</a> ipsum""");
-    Add("Lorem https://www.example.org?example=(example) ipsum", """Lorem <a href="https://www.example.org?example=(example)" target="_blank">https://www.example.org?example=(example)</a> ipsum""");
-    Add("Lorem https://www.example.org/?example=(example) ipsum", """Lorem <a href="https://www.example.org/?example=(example)" target="_blank">https://www.example.org/?example=(example)</a> ipsum""");
-    Add("Lorem https://www.example.org/?example=example%5Borg%5D ipsum", """Lorem <a href="https://www.example.org/?example=example%5Borg%5D" target="_blank">https://www.example.org/?example=example%5Borg%5D</a> ipsum""");
-    Add("Lorem (https://www.example.org/example_(example)) ipsum", """Lorem (<a href="https://www.example.org/example_(example)" target="_blank">https://www.example.org/example_(example)</a>) ipsum""");
-    Add("Lorem (https://www.example.org?example=(example)) ipsum", """Lorem (<a href="https://www.example.org?example=(example)" target="_blank">https://www.example.org?example=(example)</a>) ipsum""");
-    Add("Lorem (https://www.example.org/?example=(example)) ipsum", """Lorem (<a href="https://www.example.org/?example=(example)" target="_blank">https://www.example.org/?example=(example)</a>) ipsum""");
-    Add("Lorem (https://www.example.org/?example=example%5Borg%5D) ipsum", """Lorem (<a href="https://www.example.org/?example=example%5Borg%5D" target="_blank">https://www.example.org/?example=example%5Borg%5D</a>) ipsum""");
+    Add("Lorem https://www.example.org/example_(example) ipsum", """Lorem <a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a> ipsum""");
+    Add("Lorem https://www.example.org?example=(example) ipsum", """Lorem <a href="https://www.example.org?example=(example)" target="_blank" rel="noopener">https://www.example.org?example=(example)</a> ipsum""");
+    Add("Lorem https://www.example.org/?example=(example) ipsum", """Lorem <a href="https://www.example.org/?example=(example)" target="_blank" rel="noopener">https://www.example.org/?example=(example)</a> ipsum""");
+    Add("Lorem https://www.example.org/?example=example%5Borg%5D ipsum", """Lorem <a href="https://www.example.org/?example=example%5Borg%5D" target="_blank" rel="noopener">https://www.example.org/?example=example%5Borg%5D</a> ipsum""");
+    Add("Lorem (https://www.example.org/example_(example)) ipsum", """Lorem (<a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>) ipsum""");
+    Add("Lorem (https://www.example.org?example=(example)) ipsum", """Lorem (<a href="https://www.example.org?example=(example)" target="_blank" rel="noopener">https://www.example.org?example=(example)</a>) ipsum""");
+    Add("Lorem (https://www.example.org/?example=(example)) ipsum", """Lorem (<a href="https://www.example.org/?example=(example)" target="_blank" rel="noopener">https://www.example.org/?example=(example)</a>) ipsum""");
+    Add("Lorem (https://www.example.org/?example=example%5Borg%5D) ipsum", """Lorem (<a href="https://www.example.org/?example=example%5Borg%5D" target="_blank" rel="noopener">https://www.example.org/?example=example%5Borg%5D</a>) ipsum""");
 
     // Quotes
-    Add("\"www.example.org\"", "\"<a href=\"http://www.example.org\" target=\"_blank\">www.example.org</a>\"");
-    Add("'www.example.org'", "'<a href=\"http://www.example.org\" target=\"_blank\">www.example.org</a>'");
+    Add("\"www.example.org\"", "\"<a href=\"http://www.example.org\" target=\"_blank\" rel=\"noopener\">www.example.org</a>\"");
+    Add("'www.example.org'", "'<a href=\"http://www.example.org\" target=\"_blank\" rel=\"noopener\">www.example.org</a>'");
     Add("\"mail@example.org\"", "\"<a href=\"mailto:mail@example.org\">mail@example.org</a>\"");
-    Add("""Lorem "www.example.org/path" ipsum""", """Lorem "<a href="http://www.example.org/path" target="_blank">www.example.org/path</a>" ipsum""");
-    Add("""Lorem 'https://www.example.org' ipsum""", """Lorem '<a href="https://www.example.org" target="_blank">https://www.example.org</a>' ipsum""");
-    Add("""Lorem "www.example.org". Ipsum.""", """Lorem "<a href="http://www.example.org" target="_blank">www.example.org</a>". Ipsum.""");
+    Add("""Lorem "www.example.org/path" ipsum""", """Lorem "<a href="http://www.example.org/path" target="_blank" rel="noopener">www.example.org/path</a>" ipsum""");
+    Add("""Lorem 'https://www.example.org' ipsum""", """Lorem '<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>' ipsum""");
+    Add("""Lorem "www.example.org". Ipsum.""", """Lorem "<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>". Ipsum.""");
 
     // Punctuation
-    Add("Lorem https://www.example.org. Ipsum.", """Lorem <a href="https://www.example.org" target="_blank">https://www.example.org</a>. Ipsum.""");
-    Add("Lorem https://www.example.org/. Ipsum.", """Lorem <a href="https://www.example.org/" target="_blank">https://www.example.org/</a>. Ipsum.""");
-    Add("Lorem https://www.example.org? Ipsum.", """Lorem <a href="https://www.example.org" target="_blank">https://www.example.org</a>? Ipsum.""");
-    Add("Lorem https://www.example.org#. Ipsum.", """Lorem <a href="https://www.example.org#" target="_blank">https://www.example.org#</a>. Ipsum.""");
-    Add("Lorem https://lorem.ipsum.example.co.uk. Ipsum.", """Lorem <a href="https://lorem.ipsum.example.co.uk" target="_blank">https://lorem.ipsum.example.co.uk</a>. Ipsum.""");
-    Add("Lorem https://lorem.ipsum.example.co.uk! Ipsum.", """Lorem <a href="https://lorem.ipsum.example.co.uk" target="_blank">https://lorem.ipsum.example.co.uk</a>! Ipsum.""");
-    Add("Lorem https://www.example.org/example_(example). Ipsum.", """Lorem <a href="https://www.example.org/example_(example)" target="_blank">https://www.example.org/example_(example)</a>. Ipsum.""");
-    Add("Lorem https://www.example.org/example_(example)! Ipsum.", """Lorem <a href="https://www.example.org/example_(example)" target="_blank">https://www.example.org/example_(example)</a>! Ipsum.""");
+    Add("Lorem https://www.example.org. Ipsum.", """Lorem <a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>. Ipsum.""");
+    Add("Lorem https://www.example.org/. Ipsum.", """Lorem <a href="https://www.example.org/" target="_blank" rel="noopener">https://www.example.org/</a>. Ipsum.""");
+    Add("Lorem https://www.example.org? Ipsum.", """Lorem <a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>? Ipsum.""");
+    Add("Lorem https://www.example.org#. Ipsum.", """Lorem <a href="https://www.example.org#" target="_blank" rel="noopener">https://www.example.org#</a>. Ipsum.""");
+    Add("Lorem https://lorem.ipsum.example.co.uk. Ipsum.", """Lorem <a href="https://lorem.ipsum.example.co.uk" target="_blank" rel="noopener">https://lorem.ipsum.example.co.uk</a>. Ipsum.""");
+    Add("Lorem https://lorem.ipsum.example.co.uk! Ipsum.", """Lorem <a href="https://lorem.ipsum.example.co.uk" target="_blank" rel="noopener">https://lorem.ipsum.example.co.uk</a>! Ipsum.""");
+    Add("Lorem https://www.example.org/example_(example). Ipsum.", """Lorem <a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>. Ipsum.""");
+    Add("Lorem https://www.example.org/example_(example)! Ipsum.", """Lorem <a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>! Ipsum.""");
 
     // Ports
     Add("example.org:80", "example.org:80");
-    Add("www.example.org:80", """<a href="http://www.example.org:80" target="_blank">www.example.org:80</a>""");
-    Add("https://www.example.org:80", """<a href="https://www.example.org:80" target="_blank">https://www.example.org:80</a>""");
+    Add("www.example.org:80", """<a href="http://www.example.org:80" target="_blank" rel="noopener">www.example.org:80</a>""");
+    Add("https://www.example.org:80", """<a href="https://www.example.org:80" target="_blank" rel="noopener">https://www.example.org:80</a>""");
     Add("example.org:80/", "example.org:80/");
-    Add("www.example.org:80/", """<a href="http://www.example.org:80/" target="_blank">www.example.org:80/</a>""");
-    Add("https://www.example.org:80/", """<a href="https://www.example.org:80/" target="_blank">https://www.example.org:80/</a>""");
+    Add("www.example.org:80/", """<a href="http://www.example.org:80/" target="_blank" rel="noopener">www.example.org:80/</a>""");
+    Add("https://www.example.org:80/", """<a href="https://www.example.org:80/" target="_blank" rel="noopener">https://www.example.org:80/</a>""");
     Add("www.example.com:8080", """<a href="http://www.example.com:8080">www.example.com:8080</a>""");
 
     // User information and IPv6 hosts
     Add("https://user:pass@www.example.com/example", """<a href="https://user:pass@www.example.com/example">https://user:pass@www.example.com/example</a>""");
-    Add("https://user:pass@www.example.org/example", """<a href="https://user:pass@www.example.org/example" target="_blank">https://user:pass@www.example.org/example</a>""");
-    Add("https://www.example.com@www.example.org/example", """<a href="https://www.example.com@www.example.org/example" target="_blank">https://www.example.com@www.example.org/example</a>""");
-    Add("https://[2001:db8::1]:8080/example", """<a href="https://[2001:db8::1]:8080/example" target="_blank">https://[2001:db8::1]:8080/example</a>""");
+    Add("https://user:pass@www.example.org/example", """<a href="https://user:pass@www.example.org/example" target="_blank" rel="noopener">https://user:pass@www.example.org/example</a>""");
+    Add("https://www.example.com@www.example.org/example", """<a href="https://www.example.com@www.example.org/example" target="_blank" rel="noopener">https://www.example.com@www.example.org/example</a>""");
+    Add("https://[2001:db8::1]:8080/example", """<a href="https://[2001:db8::1]:8080/example" target="_blank" rel="noopener">https://[2001:db8::1]:8080/example</a>""");
 
     // Email
     Add("@example.org", "@example.org");
@@ -153,12 +153,12 @@ internal sealed class CustomOptionsData : TheoryData<string?, string?>
     Add("Lorem mail+mail.mail@example.org ipsum", """Lorem <a href="mailto:mail+mail.mail@example.org">mail+mail.mail@example.org</a> ipsum""");
 
     // Other schemes
-    Add("file://example/org/example.txt", """<a href="file://example/org/example.txt" target="_blank">file://example/org/example.txt</a>""");
-    Add("ftp://example/org/example/", """<a href="ftp://example/org/example/" target="_blank">ftp://example/org/example/</a>""");
-    Add("git://example/org/example.git", """<a href="git://example/org/example.git" target="_blank">git://example/org/example.git</a>""");
-    Add("irc://example.org:6667/example", """<a href="irc://example.org:6667/example" target="_blank">irc://example.org:6667/example</a>""");
-    Add("slack://example?org=example", """<a href="slack://example?org=example" target="_blank">slack://example?org=example</a>""");
-    Add("ab://c", """<a href="ab://c" target="_blank">ab://c</a>""");
+    Add("file://example/org/example.txt", """<a href="file://example/org/example.txt" target="_blank" rel="noopener">file://example/org/example.txt</a>""");
+    Add("ftp://example/org/example/", """<a href="ftp://example/org/example/" target="_blank" rel="noopener">ftp://example/org/example/</a>""");
+    Add("git://example/org/example.git", """<a href="git://example/org/example.git" target="_blank" rel="noopener">git://example/org/example.git</a>""");
+    Add("irc://example.org:6667/example", """<a href="irc://example.org:6667/example" target="_blank" rel="noopener">irc://example.org:6667/example</a>""");
+    Add("slack://example?org=example", """<a href="slack://example?org=example" target="_blank" rel="noopener">slack://example?org=example</a>""");
+    Add("ab://c", """<a href="ab://c" target="_blank" rel="noopener">ab://c</a>""");
 
     // Incomplete schemes
     Add("Always type https:// before the domain", "Always type https:// before the domain");
@@ -172,20 +172,20 @@ internal sealed class CustomOptionsData : TheoryData<string?, string?>
     Add("data://text/html;base64,ABC", "data://text/html;base64,ABC");
     Add("Lorem javascript://%0aalert(1) ipsum", "Lorem javascript://%0aalert(1) ipsum");
     // A dangerous scheme inside the query is harmless as only the leading scheme matters
-    Add("https://www.example.org/?u=javascript://x", """<a href="https://www.example.org/?u=javascript://x" target="_blank">https://www.example.org/?u=javascript://x</a>""");
+    Add("https://www.example.org/?u=javascript://x", """<a href="https://www.example.org/?u=javascript://x" target="_blank" rel="noopener">https://www.example.org/?u=javascript://x</a>""");
 
     // Markup characters
     Add("""https://example.org/"onclick="alert(1)""", """https://example.org/"onclick="alert(1)""");
     Add("https://www.example.org/<script>", "https://www.example.org/<script>");
-    Add("<https://www.example.org>", """<<a href="https://www.example.org" target="_blank">https://www.example.org</a>>""");
+    Add("<https://www.example.org>", """<<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>>""");
 
     // Multiple links
-    Add("Lorem www.example.org ipsum mail@example.org dolor.", """Lorem <a href="http://www.example.org" target="_blank">www.example.org</a> ipsum <a href="mailto:mail@example.org">mail@example.org</a> dolor.""");
+    Add("Lorem www.example.org ipsum mail@example.org dolor.", """Lorem <a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a> ipsum <a href="mailto:mail@example.org">mail@example.org</a> dolor.""");
 
     // Scheme in query
     Add("www.example.com/redirect?to=https://other.com", """<a href="http://www.example.com/redirect?to=https://other.com">www.example.com/redirect?to=https://other.com</a>""");
-    Add("www.example.org/?ref=https://www.example.com", """<a href="http://www.example.org/?ref=https://www.example.com" target="_blank">www.example.org/?ref=https://www.example.com</a>""");
+    Add("www.example.org/?ref=https://www.example.com", """<a href="http://www.example.org/?ref=https://www.example.com" target="_blank" rel="noopener">www.example.org/?ref=https://www.example.com</a>""");
     Add("https://www.example.com/redirect?to=https://other.com", """<a href="https://www.example.com/redirect?to=https://other.com">https://www.example.com/redirect?to=https://other.com</a>""");
-    Add("https://www.example.org/?ref=https://www.example.com", """<a href="https://www.example.org/?ref=https://www.example.com" target="_blank">https://www.example.org/?ref=https://www.example.com</a>""");
+    Add("https://www.example.org/?ref=https://www.example.com", """<a href="https://www.example.org/?ref=https://www.example.com" target="_blank" rel="noopener">https://www.example.org/?ref=https://www.example.com</a>""");
   }
 }

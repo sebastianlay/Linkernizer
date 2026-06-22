@@ -14,8 +14,9 @@ var output = linkernizer.Linkernize(input);
 You can configure a few additional options like this:
 ```c#
 var linkernizer = new Linkernizer(options => {
-  options.OpenExternalLinksInNewTab = true; // inserts target="_blank"
-  options.InternalHost = "www.example.com"; // do not insert target="_blank" on these links
+  options.OpenExternalLinksInNewTab = true; // inserts target="_blank" and rel="noopener"
+  options.NoReferrerOnExternalLinks = true; // also adds noreferrer to the rel attribute
+  options.InternalHost = "www.example.com"; // treat these as internal (no target or rel)
   options.DefaultScheme = "http://"; // use this scheme for links starting with www.
 });
 ```

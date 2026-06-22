@@ -9,7 +9,12 @@ namespace Linkernizer.Internal;
 /// <param name="input">The complete input text.</param>
 /// <param name="replacements">The replacements to be made.</param>
 /// <param name="defaultScheme">The default scheme to prepend for links without a scheme.</param>
-internal readonly ref struct State(ReadOnlySpan<char> input, ReadOnlySpan<Replacement> replacements, string defaultScheme)
+/// <param name="openingTagEndExternal">The opening tag end to use for external links.</param>
+internal readonly ref struct State(
+  ReadOnlySpan<char> input,
+  ReadOnlySpan<Replacement> replacements,
+  string defaultScheme,
+  string openingTagEndExternal)
 {
   /// <summary>The complete input text.</summary>
   public ReadOnlySpan<char> Input { get; } = input;
@@ -19,6 +24,9 @@ internal readonly ref struct State(ReadOnlySpan<char> input, ReadOnlySpan<Replac
 
   /// <summary>The default scheme to prepend for links without a scheme.</summary>
   public string DefaultScheme { get; } = defaultScheme;
+
+  /// <summary>The opening tag end to use for external links.</summary>
+  public string OpeningTagEndExternal { get; } = openingTagEndExternal;
 }
 
 /// <summary>

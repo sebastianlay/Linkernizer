@@ -20,7 +20,8 @@ public class Linkernizer : ILinkernizer
 
   private const string OpeningTagBegin = "<a href=\"";
   private const string OpeningTagEndInternal = "\">";
-  private const string OpeningTagEndExternal = "\" target=\"_blank\">";
+  private const string OpeningTagEndExternal = "\" target=\"_blank\" rel=\"noopener\">";
+  private const string OpeningTagEndExternalNoReferrer = "\" target=\"_blank\" rel=\"noopener noreferrer\">";
   private const string ClosingTag = "</a>";
 
   // The number of replacements that fit into the stack-allocated buffer
@@ -54,6 +55,7 @@ public class Linkernizer : ILinkernizer
 
   private readonly string _defaultScheme;
   private readonly string _internalHost;
+  private readonly string _openingTagEndExternal;
   private readonly bool _openExternalLinksInNewTab;
 
   /// <summary>
@@ -100,6 +102,9 @@ public class Linkernizer : ILinkernizer
     _defaultScheme = options.DefaultScheme;
     _internalHost = options.InternalHost;
     _openExternalLinksInNewTab = options.OpenExternalLinksInNewTab;
+    _openingTagEndExternal = options.NoReferrerOnExternalLinks
+      ? OpeningTagEndExternalNoReferrer
+      : OpeningTagEndExternal;
   }
 
   /// <summary>
@@ -181,8 +186,8 @@ public class Linkernizer : ILinkernizer
   /// <returns>A newly constructed string with relevant replacements done.</returns>
   private string CreateOutput(ReadOnlySpan<char> input, ReadOnlySpan<Replacement> replacements)
   {
-    var outputLength = GetOutputLength(input.Length, replacements, _defaultScheme.Length);
-    var state = new State(input, replacements, _defaultScheme);
+    var outputLength = GetOutputLength(input.Length, replacements, _defaultScheme.Length, _openingTagEndExternal.Length);
+    var state = new State(input, replacements, _defaultScheme, _openingTagEndExternal);
 
     return string.Create(outputLength, state, WriteOutput);
   }
@@ -194,9 +199,11 @@ public class Linkernizer : ILinkernizer
   /// <param name="length">The length of the complete input.</param>
   /// <param name="replacements">The list of replacements to be made.</param>
   /// <param name="defaultSchemeLength">The length of the default scheme.</param>
+  /// <param name="externalTagEndLength">The length of the opening tag end used for external links.</param>
   /// <returns>The exact length of the output string.</returns>
   /// <exception cref="UnreachableException">A replacement has an unknown type.</exception>
-  private static int GetOutputLength(int length, ReadOnlySpan<Replacement> replacements, int defaultSchemeLength)
+  private static int GetOutputLength(int length, ReadOnlySpan<Replacement> replacements,
+    int defaultSchemeLength, int externalTagEndLength)
   {
     foreach (var replacement in replacements)
     {
@@ -209,10 +216,10 @@ public class Linkernizer : ILinkernizer
           => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + defaultSchemeLength,
 
         ReplacementType.ExternalWithScheme
-          => OpeningTagBegin.Length + OpeningTagEndExternal.Length + ClosingTag.Length,
+          => OpeningTagBegin.Length + externalTagEndLength + ClosingTag.Length,
 
         ReplacementType.ExternalWithoutScheme
-          => OpeningTagBegin.Length + OpeningTagEndExternal.Length + ClosingTag.Length + defaultSchemeLength,
+          => OpeningTagBegin.Length + externalTagEndLength + ClosingTag.Length + defaultSchemeLength,
 
         ReplacementType.EmailWithoutScheme
           => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + MailToProtocol.Length,
@@ -249,7 +256,7 @@ public class Linkernizer : ILinkernizer
 
       // Write the new value of the current replacement.
       var inputSlice = state.Input.Slice(replacement.Offset, replacement.Length);
-      WriteReplacement(output, ref position, inputSlice, replacement.Type, state.DefaultScheme);
+      WriteReplacement(output, ref position, inputSlice, replacement.Type, state.DefaultScheme, state.OpeningTagEndExternal);
       inputIndex += replacement.Length;
     }
 
@@ -514,9 +521,10 @@ public class Linkernizer : ILinkernizer
   /// <param name="inputSlice">The matched part of the input.</param>
   /// <param name="type">The type of replacement that determines the HTML markup.</param>
   /// <param name="defaultScheme">The default scheme to prepend for links without a scheme.</param>
+  /// <param name="openingTagEndExternal">The opening tag end to use for external links.</param>
   /// <exception cref="UnreachableException">The replacement has an unknown type.</exception>
   private static void WriteReplacement(Span<char> output, ref int position, ReadOnlySpan<char> inputSlice,
-    ReplacementType type, ReadOnlySpan<char> defaultScheme)
+    ReplacementType type, ReadOnlySpan<char> defaultScheme, ReadOnlySpan<char> openingTagEndExternal)
   {
     Write(output, ref position, OpeningTagBegin);
 
@@ -534,12 +542,12 @@ public class Linkernizer : ILinkernizer
         break;
       case ReplacementType.ExternalWithScheme:
         Write(output, ref position, inputSlice);
-        Write(output, ref position, OpeningTagEndExternal);
+        Write(output, ref position, openingTagEndExternal);
         break;
       case ReplacementType.ExternalWithoutScheme:
         Write(output, ref position, defaultScheme);
         Write(output, ref position, inputSlice);
-        Write(output, ref position, OpeningTagEndExternal);
+        Write(output, ref position, openingTagEndExternal);
         break;
       case ReplacementType.EmailWithoutScheme:
         Write(output, ref position, MailToProtocol);
