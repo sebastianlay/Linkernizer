@@ -1,0 +1,101 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+::selection {
+  background: #fde725;
+  color: #1c1c1c;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  height: 100dvh;
+  font-family: system-ui, sans-serif;
+  color: #1c1c1c;
+  background: #fde725;
+  border: 2rem solid #fde725;
+  min-width: 300px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #fff;
+}
+
+header img {
+  width: 2rem;
+  height: 2rem;
+}
+
+header h1 {
+  font-size: 1.1rem;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #fff;
+}
+
+.panel>label,
+.panel>h2 {
+  padding: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #fff;
+  background: #000;
+}
+
+#input,
+#output {
+  flex: 1;
+  padding: 0.75rem 1.25rem 1rem;
+  overflow-y: auto;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+#input {
+  border: none;
+  outline-offset: -2px;
+  resize: none;
+  font-family: ui-monospace, monospace;
+  background: transparent;
+  outline: none;
+}
+
+#output {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+#output a {
+  color: #263bfc;
+}
+
+#output a:hover {
+  text-decoration: none;
+}
+
+@media (max-width: 45rem) {
+  main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}

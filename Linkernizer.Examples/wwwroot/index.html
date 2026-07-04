@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkernizer Playground</title>
+    <link rel="shortcut icon" href="icon.png" type="image/png">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header>
+      <img src="icon.png" alt="Icon">
+      <h1>Linkernizer Playground</h1>
+    </header>
+    <main>
+      <section class="panel">
+        <label for="input">Input</label>
+        <textarea id="input" spellcheck="false" autofocus>Visit us at www.example.org or email us at mail@example.org!
+And have you seen https://en.wikipedia.org/wiki/Knight_of_Cups_(film)?</textarea>
+      </section>
+      <section class="panel">
+        <h2>Output</h2>
+        <div id="output" aria-live="polite"></div>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
