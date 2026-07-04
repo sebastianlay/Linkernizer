@@ -80,31 +80,58 @@ public class Linkernizer : ILinkernizer
   /// </param>
   /// <exception cref="ArgumentException">The given options contain invalid values.</exception>
   public Linkernizer(Action<LinkernizerOptions>? action = null)
+    : this(CreateOptions(action), nameof(action), freeze: true)
   {
-    var options = new LinkernizerOptions();
-    action?.Invoke(options);
+  }
 
-    if (string.IsNullOrWhiteSpace(options.DefaultScheme))
-      throw new ArgumentException("DefaultScheme must not be null or empty.", nameof(action));
+  /// <summary>
+  /// Initializes a new instance of the library with the given options. This overload
+  /// is intended for the dependency injection integration where the options are built
+  /// and owned by the options infrastructure and must therefore not be mutated or frozen.
+  /// </summary>
+  /// <param name="options">The options to use.</param>
+  /// <exception cref="ArgumentException">The given options contain invalid values.</exception>
+  internal Linkernizer(LinkernizerOptions options)
+    : this(options, nameof(options), freeze: false)
+  {
+  }
 
-    if (!options.DefaultScheme.EndsWith(SchemeDelimiter, StringComparison.Ordinal))
-      throw new ArgumentException("DefaultScheme must end with \"://\".", nameof(action));
-
-    if (options.InternalHost is null)
-      throw new ArgumentException("InternalHost must not be null.", nameof(action));
-
-    if (options.InternalHost.Contains(SchemeDelimiter, StringComparison.Ordinal))
-      throw new ArgumentException("InternalHost must not contain a scheme.", nameof(action));
-
-    options.InternalHost = options.InternalHost.TrimEnd('/');
-    options.MakeReadOnly();
+  /// <summary>
+  /// Validates the given options and initializes the instance from them. The options are
+  /// only frozen when this instance owns them (the action overload), as a caller could
+  /// otherwise mutate a captured reference and bypass the validation done here.
+  /// </summary>
+  /// <param name="options">The options to validate and initialize the instance from.</param>
+  /// <param name="paramName">The name of the originating parameter for exception messages.</param>
+  /// <param name="freeze">True to mark the options as read-only after initialization.</param>
+  /// <exception cref="ArgumentException">The given options contain invalid values.</exception>
+  private Linkernizer(LinkernizerOptions options, string paramName, bool freeze)
+  {
+    var error = options.Validate();
+    if (error is not null)
+      throw new ArgumentException(error, paramName);
 
     _defaultScheme = options.DefaultScheme;
-    _internalHost = options.InternalHost;
+    _internalHost = options.InternalHost.TrimEnd('/');
     _openExternalLinksInNewTab = options.OpenExternalLinksInNewTab;
     _openingTagEndExternal = options.NoReferrerOnExternalLinks
       ? OpeningTagEndExternalNoReferrer
       : OpeningTagEndExternal;
+
+    if (freeze)
+      options.MakeReadOnly();
+  }
+
+  /// <summary>
+  /// Creates a new options instance and applies the given configuration action to it.
+  /// </summary>
+  /// <param name="action">The action that configures the options, or null for the defaults.</param>
+  /// <returns>The configured options.</returns>
+  private static LinkernizerOptions CreateOptions(Action<LinkernizerOptions>? action)
+  {
+    var options = new LinkernizerOptions();
+    action?.Invoke(options);
+    return options;
   }
 
   /// <summary>

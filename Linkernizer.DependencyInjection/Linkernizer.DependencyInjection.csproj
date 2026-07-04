@@ -1,21 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId>Linkernizer</PackageId>
+    <PackageId>Linkernizer.DependencyInjection</PackageId>
     <PackageIcon>icon.png</PackageIcon>
-    <Title>Linkernizer</Title>
+    <Title>Linkernizer.DependencyInjection</Title>
     <Authors>sebastianlay</Authors>
     <RepositoryUrl>https://github.com/sebastianlay/linkernizer</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
-    <Description>The (possibly best) .NET library for automatically linking URLs and email addresses</Description>
-    <PackageTags>autolink;linkify;linkification;links;url;email;hyperlink;anchor;html;markup</PackageTags>
-    <AssemblyVersion>1.2.0</AssemblyVersion>
-    <Version>1.2.0</Version>
+    <Description>Dependency injection extensions for Linkernizer.</Description>
+    <PackageTags>autolink;linkify;linkification;links;url;email;hyperlink;anchor;html;markup;dependencyinjection;di</PackageTags>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <Version>1.0.0</Version>
     <LangVersion>14</LangVersion>
     <DebugType>portable</DebugType>
     <IncludeSymbols>true</IncludeSymbols>
@@ -25,22 +25,23 @@
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <IsAotCompatible>true</IsAotCompatible>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.9" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Linkernizer.DependencyInjection" />
+    <ProjectReference Include="..\Linkernizer\Linkernizer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
     <None Include="..\images\icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 

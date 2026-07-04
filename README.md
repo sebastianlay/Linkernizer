@@ -21,6 +21,15 @@ var linkernizer = new Linkernizer(options => {
 });
 ```
 
+If you are using `Microsoft.Extensions.DependencyInjection`, the companion package
+[`Linkernizer.DependencyInjection`](https://www.nuget.org/packages/Linkernizer.DependencyInjection)
+adds some convenience methods to simplify usage even further:
+```c#
+services.AddLinkernizer();
+```
+
+Check the [README](Linkernizer.DependencyInjection/README.md) of the package for more detailed usage instructions and other configuration options.
+
 ## Why should I use or not use Linkernizer?
 
 You should use it because:

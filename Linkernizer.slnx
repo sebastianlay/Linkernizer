@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="Linkernizer.Benchmarks/Linkernizer.Benchmarks.csproj" />
+  <Project Path="Linkernizer.DependencyInjection/Linkernizer.DependencyInjection.csproj" />
   <Project Path="Linkernizer.Tests/Linkernizer.Tests.csproj" />
   <Project Path="Linkernizer/Linkernizer.csproj" />
 </Solution>

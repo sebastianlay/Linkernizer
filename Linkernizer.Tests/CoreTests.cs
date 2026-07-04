@@ -7,7 +7,7 @@ namespace Linkernizer.Tests;
 /// This test suite is used to verify code changes and as a sort of documentation
 /// of the expected behavior as the "right" behavior can be highly subjective.
 /// </summary>
-public class Tests
+public class CoreTests
 {
   /// <summary>
   /// Tests that invalid default scheme values are rejected during construction.

@@ -120,6 +120,30 @@ public class LinkernizerOptions
   }
 
   /// <summary>
+  /// Validates the option values and returns the first error message that is found,
+  /// or null when the options are valid. This is the single source of truth that is
+  /// used both by the constructor and by the dependency injection integration, so that
+  /// the two can never disagree on which options are considered valid.
+  /// </summary>
+  /// <returns>The first validation error message, or null when the options are valid.</returns>
+  internal string? Validate()
+  {
+    if (string.IsNullOrWhiteSpace(DefaultScheme))
+      return "DefaultScheme must not be null or empty.";
+
+    if (!DefaultScheme.EndsWith("://", StringComparison.Ordinal))
+      return "DefaultScheme must end with \"://\".";
+
+    if (InternalHost is null)
+      return "InternalHost must not be null.";
+
+    if (InternalHost.Contains("://", StringComparison.Ordinal))
+      return "InternalHost must not contain a scheme.";
+
+    return null;
+  }
+
+  /// <summary>
   /// Marks the options as read-only so that the validated values
   /// cannot be changed after the library has been constructed.
   /// </summary>
