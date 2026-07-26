@@ -178,6 +178,24 @@ public class CoreTests
   }
 
   /// <summary>
+  /// Tests that an output which would be longer than a string can ever be fails with a
+  /// meaningful exception instead of wrapping the computed length around into a negative
+  /// value. An excessively long (but still valid) default scheme is used here so that the
+  /// limit is reached with a small input rather than with a gigantic one.
+  /// </summary>
+  [Fact]
+  public void ExcessiveOutputLengthThrowsTest()
+  {
+    // Arrange
+    var linkernizer = new Linkernizer(options => options.DefaultScheme = new string('a', 1_000_000) + "://");
+    var input = string.Join(' ', Enumerable.Repeat("www.example.org", 2200));
+
+    // Act & Assert
+    Assert.Throws<OverflowException>(() => linkernizer.Linkernize(input));
+    Assert.Throws<OverflowException>(() => linkernizer.Linkernize(input.AsSpan()));
+  }
+
+  /// <summary>
   /// Tests the library with the default options.
   /// </summary>
   /// <param name="input">The value that should be supplied to the library.</param>

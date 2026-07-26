@@ -221,30 +221,36 @@ public class Linkernizer : ILinkernizer
   /// <param name="externalTagEndLength">The length of the opening tag end used for external links.</param>
   /// <returns>The exact length of the output string.</returns>
   /// <exception cref="UnreachableException">A replacement has an unknown type.</exception>
+  /// <exception cref="OverflowException">The output would be longer than <see cref="int.MaxValue"/> characters.</exception>
   private static int GetOutputLength(int length, ReadOnlySpan<Replacement> replacements,
     int defaultSchemeLength, int externalTagEndLength)
   {
     foreach (var replacement in replacements)
     {
-      length += replacement.Length + replacement.Type switch
+      // The additions are checked so that an output which would not fit into a string
+      // fails with a meaningful exception here.
+      checked
       {
-        ReplacementType.InternalWithScheme or ReplacementType.EmailWithScheme
-          => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length,
+        length += replacement.Length + replacement.Type switch
+        {
+          ReplacementType.InternalWithScheme or ReplacementType.EmailWithScheme
+            => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length,
 
-        ReplacementType.InternalWithoutScheme
-          => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + defaultSchemeLength,
+          ReplacementType.InternalWithoutScheme
+            => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + defaultSchemeLength,
 
-        ReplacementType.ExternalWithScheme
-          => OpeningTagBegin.Length + externalTagEndLength + ClosingTag.Length,
+          ReplacementType.ExternalWithScheme
+            => OpeningTagBegin.Length + externalTagEndLength + ClosingTag.Length,
 
-        ReplacementType.ExternalWithoutScheme
-          => OpeningTagBegin.Length + externalTagEndLength + ClosingTag.Length + defaultSchemeLength,
+          ReplacementType.ExternalWithoutScheme
+            => OpeningTagBegin.Length + externalTagEndLength + ClosingTag.Length + defaultSchemeLength,
 
-        ReplacementType.EmailWithoutScheme
-          => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + MailToProtocol.Length,
+          ReplacementType.EmailWithoutScheme
+            => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + MailToProtocol.Length,
 
-        _ => throw new UnreachableException($"Unknown replacement type: {replacement.Type}")
-      };
+          _ => throw new UnreachableException($"Unknown replacement type: {replacement.Type}")
+        };
+      }
     }
 
     return length;
