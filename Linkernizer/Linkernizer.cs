@@ -411,6 +411,12 @@ public class Linkernizer : ILinkernizer
     if (candidate.ContainsAny(ForbiddenCharacters))
       return false;
 
+    // Discard candidates containing control characters, as browsers remove leading ones
+    // before they parse the URL. These could otherwise be used to smuggle a dangerous
+    // scheme past the check below (as in "\u0001javascript://...").
+    if (candidate.ContainsAnyInRange('\u0000', '\u001F'))
+      return false;
+
     // We assume a link without a scheme for candidates starting with the common subdomain.
     if (candidate.StartsWith(DefaultSubdomain, StringComparison.OrdinalIgnoreCase))
     {
@@ -423,9 +429,16 @@ public class Linkernizer : ILinkernizer
     var delimiterIndex = candidate.IndexOf(SchemeDelimiter);
     if (delimiterIndex >= 1 && delimiterIndex + SchemeDelimiter.Length < candidate.Length)
     {
+      var scheme = candidate[..delimiterIndex];
+
+      // Reject anything that is not a syntactically valid scheme, as the browser could
+      // otherwise end up with a different scheme than the one that was checked here.
+      if (!IsValidScheme(scheme))
+        return false;
+
       // Reject schemes that could execute scripts when the link is clicked,
       // as these would otherwise allow XSS attacks (as in "javascript://...").
-      if (DangerousSchemes.Contains(candidate[..delimiterIndex]))
+      if (DangerousSchemes.Contains(scheme))
         return false;
 
       type = GetLinkType(candidate, true);
@@ -445,6 +458,31 @@ public class Linkernizer : ILinkernizer
     }
 
     return false;
+  }
+
+  /// <summary>
+  /// Determines if the given scheme only consists of the characters that are allowed
+  /// in a scheme according to RFC 3986. Everything else is rejected because browsers
+  /// remove or decode some characters (such as control characters or HTML entities)
+  /// before they parse the URL, which would otherwise allow sneaking a dangerous
+  /// scheme past the check for them (as in "&amp;#106;avascript://...").
+  /// </summary>
+  /// <param name="scheme">The part of the candidate before the scheme delimiter.</param>
+  /// <returns>True if the given scheme is syntactically valid.</returns>
+  private static bool IsValidScheme(ReadOnlySpan<char> scheme)
+  {
+    // A scheme always has to begin with a letter.
+    if (scheme is [] || !char.IsAsciiLetter(scheme[0]))
+      return false;
+
+    // All following characters may also be digits or one of a few special characters.
+    foreach (var character in scheme[1..])
+    {
+      if (!char.IsAsciiLetterOrDigit(character) && character is not ('+' or '-' or '.'))
+        return false;
+    }
+
+    return true;
   }
 
   /// <summary>

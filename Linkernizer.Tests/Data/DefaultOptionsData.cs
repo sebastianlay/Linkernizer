@@ -93,6 +93,9 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("(https://www.example.org/?example=example%5Borg%5D)", """(<a href="https://www.example.org/?example=example%5Borg%5D">https://www.example.org/?example=example%5Borg%5D</a>)""");
     Add("(https://www.example.org.)", """(<a href="https://www.example.org">https://www.example.org</a>.)""");
     Add("(www.example.org.)", """(<a href="https://www.example.org">www.example.org</a>.)""");
+    // An unmatched parenthesis is part of the candidate and therefore invalidates the scheme
+    Add("(https://www.example.org", "(https://www.example.org");
+    Add("(www.example.org", "(www.example.org");
 
     // Parentheses in context
     Add("Lorem https://www.example.org/example_(example) ipsum", """Lorem <a href="https://www.example.org/example_(example)">https://www.example.org/example_(example)</a> ipsum""");
@@ -159,6 +162,7 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("irc://example.org:6667/example", """<a href="irc://example.org:6667/example">irc://example.org:6667/example</a>""");
     Add("slack://example?org=example", """<a href="slack://example?org=example">slack://example?org=example</a>""");
     Add("ab://c", """<a href="ab://c">ab://c</a>""");
+    Add("ab+c-d.e://example.org", """<a href="ab+c-d.e://example.org">ab+c-d.e://example.org</a>""");
 
     // Incomplete schemes
     Add("Always type https:// before the domain", "Always type https:// before the domain");
@@ -173,6 +177,16 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("Lorem javascript://%0aalert(1) ipsum", "Lorem javascript://%0aalert(1) ipsum");
     // A dangerous scheme inside the query is harmless as only the leading scheme matters
     Add("https://www.example.org/?u=javascript://x", """<a href="https://www.example.org/?u=javascript://x">https://www.example.org/?u=javascript://x</a>""");
+
+    // Dangerous schemes that only become dangerous once the browser has parsed the markup:
+    // leading control characters are removed and HTML entities are decoded before the URL
+    // is parsed, so these must not be linked either (see also the scheme validation)
+    Add("\u0001javascript://%0aalert(1)", "\u0001javascript://%0aalert(1)");
+    Add("\u001Fjavascript://%0aalert(1)", "\u001Fjavascript://%0aalert(1)");
+    Add("&#106;avascript://%0aalert(1)", "&#106;avascript://%0aalert(1)");
+    Add("&#x6a;avascript://%0aalert(1)", "&#x6a;avascript://%0aalert(1)");
+    Add("java&Tab;script://%0aalert(1)", "java&Tab;script://%0aalert(1)");
+    Add("java&NewLine;script://%0aalert(1)", "java&NewLine;script://%0aalert(1)");
 
     // Markup characters
     Add("""https://example.org/"onclick="alert(1)""", """https://example.org/"onclick="alert(1)""");
