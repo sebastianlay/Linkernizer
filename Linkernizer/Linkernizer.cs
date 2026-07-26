@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Linkernizer.Internal;
@@ -14,7 +13,6 @@ namespace Linkernizer;
 /// </summary>
 public class Linkernizer : ILinkernizer
 {
-  private const string SchemeDelimiter = "://";
   private const string DefaultSubdomain = "www.";
   private const string MailToProtocol = "mailto:";
 
@@ -32,17 +30,11 @@ public class Linkernizer : ILinkernizer
   // The shortest possible link is either "ab://c" or "a@b.de".
   private const int MinimumLinkLength = 6;
 
-  private static readonly SearchValues<string> Indicators = SearchValues.Create([SchemeDelimiter, DefaultSubdomain, "@"],
+  private static readonly SearchValues<string> Indicators = SearchValues.Create([Scheme.Delimiter, DefaultSubdomain, "@"],
     StringComparison.OrdinalIgnoreCase
   );
   private static readonly SearchValues<char> TrimCharacters = SearchValues.Create('.', ':', '?', '!', ',', ';');
   private static readonly SearchValues<char> ForbiddenCharacters = SearchValues.Create('"', '<', '>');
-
-  // Schemes that could execute scripts when the link is clicked. The span alternate
-  // lookup allows checking a candidate's scheme without allocating it as a string.
-  private static readonly FrozenSet<string>.AlternateLookup<ReadOnlySpan<char>> DangerousSchemes = FrozenSet.Create(
-    StringComparer.OrdinalIgnoreCase, "javascript", "vbscript", "data")
-    .GetAlternateLookup<ReadOnlySpan<char>>();
 
   private static readonly SearchValues<char> AuthorityDelimiters = SearchValues.Create('/', '?', '#');
   private static readonly SearchValues<char> Whitespaces = SearchValues.Create(
@@ -426,19 +418,16 @@ public class Linkernizer : ILinkernizer
 
     // We assume a fully qualified link with a scheme if the separator is found anywhere
     // (with at least one character before it for the scheme and one after it for the host).
-    var delimiterIndex = candidate.IndexOf(SchemeDelimiter);
-    if (delimiterIndex >= 1 && delimiterIndex + SchemeDelimiter.Length < candidate.Length)
+    if (Scheme.TryGet(candidate, out var scheme))
     {
-      var scheme = candidate[..delimiterIndex];
-
       // Reject anything that is not a syntactically valid scheme, as the browser could
       // otherwise end up with a different scheme than the one that was checked here.
-      if (!IsValidScheme(scheme))
+      if (!Scheme.IsValid(scheme))
         return false;
 
       // Reject schemes that could execute scripts when the link is clicked,
       // as these would otherwise allow XSS attacks (as in "javascript://...").
-      if (DangerousSchemes.Contains(scheme))
+      if (Scheme.IsDangerous(scheme))
         return false;
 
       type = GetLinkType(candidate, true);
@@ -458,31 +447,6 @@ public class Linkernizer : ILinkernizer
     }
 
     return false;
-  }
-
-  /// <summary>
-  /// Determines if the given scheme only consists of the characters that are allowed
-  /// in a scheme according to RFC 3986. Everything else is rejected because browsers
-  /// remove or decode some characters (such as control characters or HTML entities)
-  /// before they parse the URL, which would otherwise allow sneaking a dangerous
-  /// scheme past the check for them (as in "&amp;#106;avascript://...").
-  /// </summary>
-  /// <param name="scheme">The part of the candidate before the scheme delimiter.</param>
-  /// <returns>True if the given scheme is syntactically valid.</returns>
-  private static bool IsValidScheme(ReadOnlySpan<char> scheme)
-  {
-    // A scheme always has to begin with a letter.
-    if (scheme is [] || !char.IsAsciiLetter(scheme[0]))
-      return false;
-
-    // All following characters may also be digits or one of a few special characters.
-    foreach (var character in scheme[1..])
-    {
-      if (!char.IsAsciiLetterOrDigit(character) && character is not ('+' or '-' or '.'))
-        return false;
-    }
-
-    return true;
   }
 
   /// <summary>
@@ -534,7 +498,7 @@ public class Linkernizer : ILinkernizer
   /// <returns>The host of the given link without the scheme, user information, and port.</returns>
   private static ReadOnlySpan<char> GetHost(ReadOnlySpan<char> link, bool withScheme)
   {
-    var linkWithoutScheme = StripScheme(link, withScheme);
+    var linkWithoutScheme = Scheme.Strip(link, withScheme);
 
     // The authority ends at the first slash, question mark, or hash.
     var authorityEnd = linkWithoutScheme.IndexOfAny(AuthorityDelimiters);
@@ -557,25 +521,6 @@ public class Linkernizer : ILinkernizer
     // Otherwise the host ends at the colon that separates the port.
     var portStart = authority.IndexOf(':');
     return portStart >= 0 ? authority[..portStart] : authority;
-  }
-
-  /// <summary>
-  /// Returns the link without the scheme at the beginning in case there was any.
-  /// </summary>
-  /// <param name="link">The assumed link with or without scheme.</param>
-  /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
-  /// <returns>The link without the scheme.</returns>
-  private static ReadOnlySpan<char> StripScheme(ReadOnlySpan<char> link, bool withScheme)
-  {
-    // Return the link immediately in case we know that it does not contain a scheme.
-    if (!withScheme)
-      return link;
-
-    // Otherwise find the end of the scheme and strip it from the link.
-    var schemeEnd = link.IndexOf(SchemeDelimiter);
-    var hostStart = schemeEnd >= 0 ? schemeEnd + SchemeDelimiter.Length : 0;
-
-    return link[hostStart..];
   }
 
   /// <summary>

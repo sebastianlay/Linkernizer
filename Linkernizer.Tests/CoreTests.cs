@@ -20,12 +20,56 @@ public class CoreTests
   [InlineData("https")]
   [InlineData("https:")]
   [InlineData("https:/")]
+  [InlineData("://")]
+  [InlineData("1https://")]
+  [InlineData("http s://")]
+  [InlineData("https://example.org://")]
   public void InvalidDefaultSchemeTest(string? scheme)
   {
     Assert.Throws<ArgumentException>(() => new Linkernizer(options =>
     {
       options.DefaultScheme = scheme!;
     }));
+  }
+
+  /// <summary>
+  /// Tests that schemes which could execute scripts are rejected as the default scheme,
+  /// as this scheme ends up in the href attribute of every link without its own scheme.
+  /// </summary>
+  /// <param name="scheme">The dangerous scheme value to test.</param>
+  [Theory]
+  [InlineData("javascript://")]
+  [InlineData("JavaScript://")]
+  [InlineData("vbscript://")]
+  [InlineData("data://")]
+  public void DangerousDefaultSchemeTest(string scheme)
+  {
+    Assert.Throws<ArgumentException>(() => new Linkernizer(options =>
+    {
+      options.DefaultScheme = scheme;
+    }));
+  }
+
+  /// <summary>
+  /// Tests that uncommon but valid schemes are accepted as the default scheme.
+  /// </summary>
+  /// <param name="scheme">The valid scheme value to test.</param>
+  [Theory]
+  [InlineData("http://")]
+  [InlineData("https://")]
+  [InlineData("ftp://")]
+  [InlineData("web+calendar://")]
+  [InlineData("x-custom.scheme://")]
+  public void ValidDefaultSchemeTest(string scheme)
+  {
+    // Arrange
+    var linkernizer = new Linkernizer(options => options.DefaultScheme = scheme);
+
+    // Act
+    var result = linkernizer.Linkernize("www.example.org");
+
+    // Assert
+    Assert.Equal($"""<a href="{scheme}www.example.org">www.example.org</a>""", result);
   }
 
   /// <summary>

@@ -176,4 +176,27 @@ public class DependencyInjectionTests
     // Act & Assert
     Assert.Throws<OptionsValidationException>(provider.GetRequiredService<ILinkernizer>);
   }
+
+  /// <summary>
+  /// Tests that a scheme which could execute scripts is also rejected when it is bound
+  /// from a configuration source, as that is the most likely way for it to slip in.
+  /// </summary>
+  [Fact]
+  public void AddLinkernizerWithDangerousSchemeFromConfigurationThrowsTest()
+  {
+    // Arrange
+    var configuration = new ConfigurationBuilder()
+      .AddInMemoryCollection(new Dictionary<string, string?>
+      {
+        ["Linkernizer:DefaultScheme"] = "javascript://"
+      })
+      .Build();
+
+    var provider = new ServiceCollection()
+      .AddLinkernizer(configuration.GetSection("Linkernizer"))
+      .BuildServiceProvider();
+
+    // Act & Assert
+    Assert.Throws<OptionsValidationException>(provider.GetRequiredService<ILinkernizer>);
+  }
 }

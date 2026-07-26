@@ -17,16 +17,16 @@ internal readonly ref struct State(
   string openingTagEndExternal)
 {
   /// <summary>The complete input text.</summary>
-  public ReadOnlySpan<char> Input { get; } = input;
+  internal ReadOnlySpan<char> Input { get; } = input;
 
   /// <summary>The replacements to be made.</summary>
-  public ReadOnlySpan<Replacement> Replacements { get; } = replacements;
+  internal ReadOnlySpan<Replacement> Replacements { get; } = replacements;
 
   /// <summary>The default scheme to prepend for links without a scheme.</summary>
-  public string DefaultScheme { get; } = defaultScheme;
+  internal string DefaultScheme { get; } = defaultScheme;
 
   /// <summary>The opening tag end to use for external links.</summary>
-  public string OpeningTagEndExternal { get; } = openingTagEndExternal;
+  internal string OpeningTagEndExternal { get; } = openingTagEndExternal;
 }
 
 /// <summary>
@@ -63,13 +63,13 @@ internal ref struct ReplacementList(Span<Replacement> initialBuffer)
   private int _count;
 
   /// <summary>The replacements added so far.</summary>
-  public readonly ReadOnlySpan<Replacement> Replacements => _buffer[.._count];
+  internal readonly ReadOnlySpan<Replacement> Replacements => _buffer[.._count];
 
   /// <summary>
   /// Adds the given replacement to the buffer and grows it beforehand when it is full.
   /// </summary>
   /// <param name="replacement">The replacement to add.</param>
-  public void Add(Replacement replacement)
+  internal void Add(Replacement replacement)
   {
     if (_count == _buffer.Length)
       Grow();
@@ -81,7 +81,7 @@ internal ref struct ReplacementList(Span<Replacement> initialBuffer)
   /// Returns the rented array back to the pool in case the buffer was grown.
   /// The list must not be used after it has been disposed.
   /// </summary>
-  public readonly void Dispose()
+  internal readonly void Dispose()
   {
     if (_rentedArray is not null)
       ArrayPool<Replacement>.Shared.Return(_rentedArray);

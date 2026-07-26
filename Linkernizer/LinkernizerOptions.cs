@@ -1,3 +1,5 @@
+using Linkernizer.Internal;
+
 namespace Linkernizer;
 
 /// <summary>
@@ -27,6 +29,11 @@ public class LinkernizerOptions
   /// <summary>
   ///   <para>
   ///     The default URI scheme will be used for links without a scheme specified (like www.example.org).
+  ///   </para>
+  ///   <para>
+  ///     The value has to be a valid scheme followed by <c>://</c> and must not be a scheme
+  ///     that could execute scripts, as it would otherwise allow XSS attacks through every
+  ///     link that does not bring its own scheme.
   ///   </para>
   ///   <example>
   ///     This option will only be used in the href attribute:
@@ -131,13 +138,23 @@ public class LinkernizerOptions
     if (string.IsNullOrWhiteSpace(DefaultScheme))
       return "DefaultScheme must not be null or empty.";
 
-    if (!DefaultScheme.EndsWith("://", StringComparison.Ordinal))
+    if (!DefaultScheme.EndsWith(Scheme.Delimiter, StringComparison.Ordinal))
       return "DefaultScheme must end with \"://\".";
+
+    // The configured scheme has to pass the same checks as a scheme found in the input,
+    // as it ends up in the href attribute of every link that does not bring its own.
+    var scheme = DefaultScheme.AsSpan(0, DefaultScheme.Length - Scheme.Delimiter.Length);
+
+    if (!Scheme.IsValid(scheme))
+      return "DefaultScheme must be a valid scheme followed by \"://\".";
+
+    if (Scheme.IsDangerous(scheme))
+      return "DefaultScheme must not be a scheme that could execute scripts.";
 
     if (InternalHost is null)
       return "InternalHost must not be null.";
 
-    if (InternalHost.Contains("://", StringComparison.Ordinal))
+    if (InternalHost.Contains(Scheme.Delimiter, StringComparison.Ordinal))
       return "InternalHost must not contain a scheme.";
 
     return null;
