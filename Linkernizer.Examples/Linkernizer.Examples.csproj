@@ -2,12 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
-    <AnalysisLevel>latest-recommended</AnalysisLevel>
-    <LangVersion>14</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

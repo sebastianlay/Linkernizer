@@ -2,31 +2,14 @@
 
   <PropertyGroup>
     <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <PackageId>Linkernizer.DependencyInjection</PackageId>
-    <PackageIcon>icon.png</PackageIcon>
     <Title>Linkernizer.DependencyInjection</Title>
-    <Authors>sebastianlay</Authors>
-    <RepositoryUrl>https://github.com/sebastianlay/linkernizer</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <AnalysisLevel>latest-recommended</AnalysisLevel>
     <Description>Dependency injection extensions for Linkernizer.</Description>
     <PackageTags>autolink;linkify;linkification;links;url;email;hyperlink;anchor;html;markup;dependencyinjection;di</PackageTags>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <Version>1.0.0</Version>
-    <LangVersion>14</LangVersion>
-    <DebugType>portable</DebugType>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <IsAotCompatible>true</IsAotCompatible>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
   </PropertyGroup>
 
