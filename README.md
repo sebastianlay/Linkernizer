@@ -90,3 +90,27 @@ Keep in mind that the exact values will vary from run to run.
 
 ```
 You can verify the results by running [the same benchmarks](https://github.com/sebastianlay/Linkernizer/blob/main/Linkernizer.Benchmarks/Program.cs) on your machine.
+
+## Tests
+
+To run the test suite, use the following command:
+
+```PowerShell
+> dotnet test
+```
+
+This should only take a few seconds, usually less than two.
+
+Additionally, the mutation testing tool [Stryker.NET](https://stryker-mutator.io/docs/stryker-net/introduction/) can be used to evaluate the coverage and the quality of the test suite. To install it, run the following command:
+
+```PowerShell
+> dotnet tool restore
+```
+
+Then start a mutation testing run with the following command:
+
+```PowerShell
+> dotnet stryker
+```
+
+This run should take less than two minutes.

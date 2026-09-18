@@ -1,0 +1,10 @@
+{
+  "stryker-config": {
+    "test-runner": "mtp",
+    "verbosity": "Info",
+    "reporters": [
+      "Progress",
+      "Html"
+    ]
+  }
+}
