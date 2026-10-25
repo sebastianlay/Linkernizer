@@ -280,26 +280,17 @@ public class Linkernizer : ILinkernizer
   {
     var replacements = new ReplacementList(initialBuffer);
     var position = 0;
-    
+
     while (true)
     {
-      // Jump to the next indicator in the input
-      var indicator = input[position..].IndexOfAny(Indicators);
-      if (indicator < 0)
+      // Try to find a next word that contains an indicator.
+      if (!TryGetNextWord(input, ref position, out var word))
         break;
 
-      // Expand selection to last whitespace before and first whitespace after the indicator
-      indicator += position;
-      var wordStart = position + input[position..indicator].LastIndexOfAny(Whitespaces) + 1;
-      var wordLength = input[indicator..].IndexOfAny(Whitespaces);
-      var wordEnd = wordLength < 0 ? input.Length : indicator + wordLength;
-      var range = wordStart..wordEnd;
-      position = wordEnd;
-      
       // Trim extra characters at the beginning and end
       // of the word. This is not strictly standards-compliant,
       // but often the desired behavior in the *real* world.
-      var (offset, length) = TrimExtraCharacters(input, range);
+      var (offset, length) = TrimExtraCharacters(input, word);
 
       // Ignore excessively long 'words'.
       if (length > ushort.MaxValue)
@@ -317,15 +308,44 @@ public class Linkernizer : ILinkernizer
   }
 
   /// <summary>
+  /// Tries to find the next word that can be turned into a candidate later
+  /// by jumping to the next indicator and expanding the selection from there
+  /// in both directions until the next whitespace is hit.
+  /// </summary>
+  /// <param name="input">The complete input.</param>
+  /// <param name="position">The position from where the search starts and where it ended.</param>
+  /// <param name="word">The range of the word in the input.</param>
+  /// <returns>True when a next word was found.</returns>
+  private static bool TryGetNextWord(ReadOnlySpan<char> input, ref int position, out Range word)
+  {
+    word = default;
+
+    // Jump to the next indicator in the input.
+    var indicator = input[position..].IndexOfAny(Indicators);
+    if (indicator < 0)
+      return false;
+
+    // Expand selection to last whitespace before and first whitespace after the indicator.
+    indicator += position;
+    var wordStart = position + input[position..indicator].LastIndexOfAny(Whitespaces) + 1;
+    var wordLength = input[indicator..].IndexOfAny(Whitespaces);
+    var wordEnd = wordLength < 0 ? input.Length : indicator + wordLength;
+    position = wordEnd;
+    word = wordStart..wordEnd;
+
+    return true;
+  }
+
+  /// <summary>
   /// Finds characters that should be trimmed at the start and end
   /// of the given range in the given input and returns the updated range.
   /// </summary>
   /// <param name="input">The complete input.</param>
-  /// <param name="range">The range of a possible replacement in the input.</param>
+  /// <param name="word">The range of a possible replacement in the input.</param>
   /// <returns>The trimmed range of a possible replacement in the input.</returns>
-  private static (int Offset, int Length) TrimExtraCharacters(ReadOnlySpan<char> input, Range range)
+  private static (int Offset, int Length) TrimExtraCharacters(ReadOnlySpan<char> input, Range word)
   {
-    var (offset, length) = range.GetOffsetAndLength(input.Length);
+    var (offset, length) = word.GetOffsetAndLength(input.Length);
 
     // Trim alternately until nothing is left to trim, so that the
     // trimming order does not influence the result (as in "(www.example.org.)").
@@ -445,7 +465,7 @@ public class Linkernizer : ILinkernizer
     // Links are internal when they should not open in a new tab,
     // or when their host matches the configured internal host.
     var isInternal = !_openExternalLinksInNewTab || IsInternalHost(link, authorityStart);
-    
+
     // Only links with a scheme have their authority after the beginning.
     var withScheme = authorityStart > 0;
 
