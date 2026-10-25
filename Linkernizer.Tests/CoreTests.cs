@@ -1,4 +1,4 @@
-﻿using Linkernizer.Tests.Data;
+using Linkernizer.Tests.Data;
 using Xunit;
 
 namespace Linkernizer.Tests;
