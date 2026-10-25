@@ -115,6 +115,7 @@ public class CoreTests
     Assert.Throws<InvalidOperationException>(() => { captured.DefaultScheme = "ftp://"; });
     Assert.Throws<InvalidOperationException>(() => { captured.InternalHost = "www.example.org"; });
     Assert.Throws<InvalidOperationException>(() => { captured.OpenExternalLinksInNewTab = true; });
+    Assert.Throws<InvalidOperationException>(() => { captured.NoReferrerOnExternalLinks = true; });
   }
 
   /// <summary>
@@ -224,13 +225,7 @@ public class CoreTests
   public void CustomOptionsTest(string? input, string? expectedOutput)
   {
     // Arrange
-    var linkernizer = new Linkernizer(options =>
-    {
-      options.OpenExternalLinksInNewTab = true;
-      options.NoReferrerOnExternalLinks = false;
-      options.InternalHost = "www.example.com";
-      options.DefaultScheme = "http://";
-    });
+    var linkernizer = CreateWithCustomOptions();
 
     // Act
     var actualOutput = linkernizer.Linkernize(input);
@@ -268,12 +263,7 @@ public class CoreTests
   public void CustomOptionsSpanTest(string? input, string? expectedOutput)
   {
     // Arrange
-    var linkernizer = new Linkernizer(options =>
-    {
-      options.OpenExternalLinksInNewTab = true;
-      options.InternalHost = "www.example.com";
-      options.DefaultScheme = "http://";
-    });
+    var linkernizer = CreateWithCustomOptions();
 
     // Act
     var actualOutput = linkernizer.Linkernize(input.AsSpan());
@@ -304,5 +294,22 @@ public class CoreTests
     // Assert
     Assert.Equal("""<a href="https://www.example.org" target="_blank" rel="noopener noreferrer">https://www.example.org</a>""", externalLink);
     Assert.Equal("""<a href="https://www.example.com">https://www.example.com</a>""", internalLink);
+  }
+
+  /// <summary>
+  /// Creates the library with the custom options that the expected outputs in
+  /// <see cref="CustomOptionsData"/> are based on, so that the tests for both
+  /// overloads are guaranteed to use the same options.
+  /// </summary>
+  /// <returns>A new instance of the library with the custom options.</returns>
+  private static Linkernizer CreateWithCustomOptions()
+  {
+    return new Linkernizer(options =>
+    {
+      options.OpenExternalLinksInNewTab = true;
+      options.NoReferrerOnExternalLinks = false;
+      options.InternalHost = "www.example.com";
+      options.DefaultScheme = "http://";
+    });
   }
 }

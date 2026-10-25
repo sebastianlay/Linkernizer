@@ -18,7 +18,7 @@ public class DependencyInjectionTests
   public void AddLinkernizerRegistersResolvableServiceTest()
   {
     // Arrange
-    var provider = new ServiceCollection()
+    using var provider = new ServiceCollection()
       .AddLinkernizer()
       .BuildServiceProvider();
 
@@ -37,7 +37,7 @@ public class DependencyInjectionTests
   public void AddLinkernizerRegistersSingletonTest()
   {
     // Arrange
-    var provider = new ServiceCollection()
+    using var provider = new ServiceCollection()
       .AddLinkernizer()
       .BuildServiceProvider();
 
@@ -56,7 +56,7 @@ public class DependencyInjectionTests
   public void AddLinkernizerAppliesConfigurationTest()
   {
     // Arrange
-    var provider = new ServiceCollection()
+    using var provider = new ServiceCollection()
       .AddLinkernizer(options => options.DefaultScheme = "http://")
       .BuildServiceProvider();
 
@@ -82,7 +82,7 @@ public class DependencyInjectionTests
       })
       .Build();
 
-    var provider = new ServiceCollection()
+    using var provider = new ServiceCollection()
       .AddLinkernizer(configuration.GetSection("Linkernizer"))
       .BuildServiceProvider();
 
@@ -111,7 +111,7 @@ public class DependencyInjectionTests
       })
       .Build();
 
-    var provider = new ServiceCollection()
+    using var provider = new ServiceCollection()
       .AddLinkernizer(configuration.GetSection("Linkernizer"))
       .BuildServiceProvider();
 
@@ -149,7 +149,7 @@ public class DependencyInjectionTests
   {
     // Arrange
     var custom = new Linkernizer(options => options.DefaultScheme = "ftp://");
-    var provider = new ServiceCollection()
+    using var provider = new ServiceCollection()
       .AddSingleton<ILinkernizer>(custom)
       .AddLinkernizer()
       .BuildServiceProvider();
@@ -169,7 +169,7 @@ public class DependencyInjectionTests
   public void AddLinkernizerWithInvalidOptionsThrowsOnResolveTest()
   {
     // Arrange
-    var provider = new ServiceCollection()
+    using var provider = new ServiceCollection()
       .AddLinkernizer(options => options.DefaultScheme = "invalid")
       .BuildServiceProvider();
 
@@ -192,7 +192,7 @@ public class DependencyInjectionTests
       })
       .Build();
 
-    var provider = new ServiceCollection()
+    using var provider = new ServiceCollection()
       .AddLinkernizer(configuration.GetSection("Linkernizer"))
       .BuildServiceProvider();
 
