@@ -169,9 +169,6 @@ public class Linkernizer : ILinkernizer
   /// <returns>The output containing unencoded HTML markup.</returns>
   public string Linkernize(ReadOnlySpan<char> input)
   {
-    if (input is [])
-      return string.Empty;
-
     // Preliminary check if there are possible matches at all.
     if (!input.ContainsAny(Indicators))
       return input.ToString();
@@ -189,11 +186,11 @@ public class Linkernizer : ILinkernizer
   /// </returns>
   private string? ReplaceLinks(ReadOnlySpan<char> input)
   {
-    var replacementList = new ReplacementList(stackalloc Replacement[InitialReplacementCapacity]);
+    var replacementList = GetReplacements(input, stackalloc Replacement[InitialReplacementCapacity]);
 
     // Without any replacements the list never grew beyond the stack-allocated
     // buffer, so there is no pooled array to return and nothing to dispose.
-    if (!GetReplacements(input, ref replacementList))
+    if (replacementList.Replacements.IsEmpty)
       return null;
 
     var output = CreateOutput(input, replacementList.Replacements);
@@ -259,41 +256,29 @@ public class Linkernizer : ILinkernizer
 
     foreach (var replacement in state.Replacements)
     {
-      // Copy the part of the original input that leads up
-      // to the beginning of the current replacement.
-      if (replacement.Offset > inputIndex)
-      {
-        var segment = state.Input[inputIndex..replacement.Offset];
-        segment.CopyTo(output[position..]);
-        position += segment.Length;
-        inputIndex = replacement.Offset;
-      }
+      // Copy the part of the original input that leads up to the beginning of the current replacement.
+      Write(output, ref position, state.Input[inputIndex..replacement.Offset]);
 
       // Write the new value of the current replacement.
       var inputSlice = state.Input.Slice(replacement.Offset, replacement.Length);
       WriteReplacement(output, ref position, inputSlice, replacement.Type, state.DefaultScheme, state.OpeningTagEndExternal);
-      inputIndex += replacement.Length;
+      inputIndex = replacement.Offset + replacement.Length;
     }
 
-    // Check if there is anything remaining.
-    if (inputIndex >= state.Input.Length)
-      return;
-
     // Copy the remaining part of the original input.
-    var remaining = state.Input[inputIndex..];
-    remaining.CopyTo(output[position..]);
+    Write(output, ref position, state.Input[inputIndex..]);
   }
 
   /// <summary>
   /// Finds all parts of the given input that need to be replaced
-  /// and adds their location in the input and their type to the given list.
+  /// and collects their location in the input and their type in a list.
   /// </summary>
   /// <param name="input">The complete input.</param>
-  /// <param name="replacements">The list that collects the replacements.</param>
-  /// <returns>True if at least one replacement was found and added to the list.</returns>
-  private bool GetReplacements(ReadOnlySpan<char> input, ref ReplacementList replacements)
+  /// <param name="initialBuffer">The initial (usually stack-allocated) buffer for the list.</param>
+  /// <returns>The list of replacements, which has to be disposed by the caller.</returns>
+  private ReplacementList GetReplacements(ReadOnlySpan<char> input, Span<Replacement> initialBuffer)
   {
-    var hasReplacements = false;
+    var replacements = new ReplacementList(initialBuffer);
     var position = 0;
     
     while (true)
@@ -326,10 +311,9 @@ public class Linkernizer : ILinkernizer
         continue;
 
       replacements.Add(new Replacement(offset, (ushort)length, type));
-      hasReplacements = true;
     }
 
-    return hasReplacements;
+    return replacements;
   }
 
   /// <summary>
