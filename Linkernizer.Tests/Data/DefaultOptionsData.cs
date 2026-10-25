@@ -193,6 +193,10 @@ internal sealed class DefaultOptionsData : TheoryData<string?, string?>
     Add("https://www.example.org/<script>", "https://www.example.org/<script>");
     Add("<https://www.example.org>", """<<a href="https://www.example.org">https://www.example.org</a>>""");
 
+    // Control characters
+    Add("https://www.example.org/\u0000", "https://www.example.org/\u0000");
+    Add("https://www.example.org/\u007F", "https://www.example.org/\u007F");
+
     // Multiple links
     Add("Lorem www.example.org ipsum mail@example.org dolor.", """Lorem <a href="https://www.example.org">www.example.org</a> ipsum <a href="mailto:mail@example.org">mail@example.org</a> dolor.""");
 

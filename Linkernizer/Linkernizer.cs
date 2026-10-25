@@ -34,15 +34,21 @@ public class Linkernizer : ILinkernizer
     StringComparison.OrdinalIgnoreCase
   );
   private static readonly SearchValues<char> TrimCharacters = SearchValues.Create('.', ':', '?', '!', ',', ';');
-  private static readonly SearchValues<char> ForbiddenCharacters = SearchValues.Create('"', '<', '>');
+  private static readonly SearchValues<char> ForbiddenCharacters = SearchValues.Create(
+    '"', '<', '>',
+    '\u0000', '\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u0007',
+    '\u0008', '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u000E', '\u000F',
+    '\u0010', '\u0011', '\u0012', '\u0013', '\u0014', '\u0015', '\u0016', '\u0017',
+    '\u0018', '\u0019', '\u001A', '\u001B', '\u001C', '\u001D', '\u001E', '\u001F',
+    '\u007F'
+  );
 
   private static readonly SearchValues<char> AuthorityDelimiters = SearchValues.Create('/', '?', '#');
   private static readonly SearchValues<char> Whitespaces = SearchValues.Create(
-    '\u0020', '\u00A0', '\u1680', '\u2000', '\u2001',
-    '\u2002', '\u2003', '\u2004', '\u2005', '\u2006',
-    '\u2007', '\u2008', '\u2009', '\u200A', '\u202F',
-    '\u205F', '\u3000', '\u2028', '\u2029', '\u0009',
-    '\u000A', '\u000B', '\u000C', '\u000D', '\u0085'
+    '\u0020', '\u00A0', '\u1680', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004',
+    '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u202F', '\u205F',
+    '\u3000', '\u2028', '\u2029', '\u0009', '\u000A', '\u000B', '\u000C', '\u000D',
+    '\u0085'
   );
 
   private readonly string _defaultScheme;
@@ -412,14 +418,11 @@ public class Linkernizer : ILinkernizer
     if (candidate.Length < MinimumLinkLength)
       return false;
 
-    // Discard candidates containing characters that would break out of the generated markup.
+    // Discard candidates containing characters that would break out of the generated markup,
+    // or control characters, as browsers remove leading ones before they parse the URL.
+    // These could otherwise be used to smuggle a dangerous scheme past the check below
+    // (as in "\u0001javascript://...").
     if (candidate.ContainsAny(ForbiddenCharacters))
-      return false;
-
-    // Discard candidates containing control characters, as browsers remove leading ones
-    // before they parse the URL. These could otherwise be used to smuggle a dangerous
-    // scheme past the check below (as in "\u0001javascript://...").
-    if (candidate.ContainsAnyInRange('\u0000', '\u001F'))
       return false;
 
     // We assume a link without a scheme for candidates starting with the common subdomain.
