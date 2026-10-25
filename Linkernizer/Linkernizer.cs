@@ -304,16 +304,23 @@ public class Linkernizer : ILinkernizer
   private bool GetReplacements(ReadOnlySpan<char> input, ref ReplacementList replacements)
   {
     var hasReplacements = false;
-
-    // Split the input on whitespaces as they are usually
-    // the boundary of a part that should be linked.
-    // We assume spaces in URLs to be URL-encoded.
-    foreach (var range in input.SplitAny(Whitespaces))
+    var position = 0;
+    
+    while (true)
     {
-      // Ignore all 'words' that cannot contain a link.
-      if (!input[range].ContainsAny(Indicators))
-        continue;
+      // Jump to the next indicator in the input
+      var indicator = input[position..].IndexOfAny(Indicators);
+      if (indicator < 0)
+        break;
 
+      // Expand selection to last whitespace before and first whitespace after the indicator
+      indicator += position;
+      var wordStart = position + input[position..indicator].LastIndexOfAny(Whitespaces) + 1;
+      var wordLength = input[indicator..].IndexOfAny(Whitespaces);
+      var wordEnd = wordLength < 0 ? input.Length : indicator + wordLength;
+      var range = wordStart..wordEnd;
+      position = wordEnd;
+      
       // Trim extra characters at the beginning and end
       // of the word. This is not strictly standards-compliant,
       // but often the desired behavior in the *real* world.
