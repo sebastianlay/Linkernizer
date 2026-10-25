@@ -52,25 +52,6 @@ internal static class Scheme
   internal static bool IsDangerous(ReadOnlySpan<char> scheme) => DangerousSchemes.Contains(scheme);
 
   /// <summary>
-  /// Returns the link without the scheme at the beginning in case there was any.
-  /// </summary>
-  /// <param name="link">The assumed link with or without scheme.</param>
-  /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
-  /// <returns>The link without the scheme.</returns>
-  internal static ReadOnlySpan<char> Strip(ReadOnlySpan<char> link, bool withScheme)
-  {
-    // Return the link immediately in case we know that it does not contain a scheme.
-    if (!withScheme)
-      return link;
-
-    // Otherwise find the end of the scheme and strip it from the link.
-    var schemeEnd = link.IndexOf(Delimiter);
-    var hostStart = schemeEnd >= 0 ? schemeEnd + Delimiter.Length : 0;
-
-    return link[hostStart..];
-  }
-
-  /// <summary>
   /// Tries to find the scheme at the beginning of the given candidate. A scheme is only
   /// assumed when the delimiter is found with at least one character before it for the
   /// scheme and at least one character after it for the host. The scheme is merely located

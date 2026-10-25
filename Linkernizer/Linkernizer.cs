@@ -428,7 +428,7 @@ public class Linkernizer : ILinkernizer
     // We assume a link without a scheme for candidates starting with the common subdomain.
     if (candidate.StartsWith(DefaultSubdomain, StringComparison.OrdinalIgnoreCase))
     {
-      type = GetLinkType(candidate, false);
+      type = GetLinkType(candidate, 0);
       return true;
     }
 
@@ -446,7 +446,8 @@ public class Linkernizer : ILinkernizer
       if (Scheme.IsDangerous(scheme))
         return false;
 
-      type = GetLinkType(candidate, true);
+      // The authority begins directly after the scheme delimiter that was already found.
+      type = GetLinkType(candidate, scheme.Length + Scheme.Delimiter.Length);
       return true;
     }
 
@@ -469,13 +470,16 @@ public class Linkernizer : ILinkernizer
   /// Determines the type of the link.
   /// </summary>
   /// <param name="link">The candidate that was already determined to be a link of some sort.</param>
-  /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
+  /// <param name="authorityStart">The index where the authority begins, which is after the scheme delimiter for links with a scheme and zero otherwise.</param>
   /// <returns>The type of the link so that it can be properly replaced later.</returns>
-  private ReplacementType GetLinkType(ReadOnlySpan<char> link, bool withScheme)
+  private ReplacementType GetLinkType(ReadOnlySpan<char> link, int authorityStart)
   {
     // Links are internal when they should not open in a new tab,
     // or when their host matches the configured internal host.
-    var isInternal = !_openExternalLinksInNewTab || IsInternalHost(link, withScheme);
+    var isInternal = !_openExternalLinksInNewTab || IsInternalHost(link, authorityStart);
+    
+    // Only links with a scheme have their authority after the beginning.
+    var withScheme = authorityStart > 0;
 
     return (isInternal, withScheme) switch
     {
@@ -492,14 +496,14 @@ public class Linkernizer : ILinkernizer
   /// internal and external links is then meaningless and all links are treated as external.
   /// </summary>
   /// <param name="link">The assumed link with or without scheme.</param>
-  /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
+  /// <param name="authorityStart">The index where the authority begins, which is after the scheme delimiter for links with a scheme and zero otherwise.</param>
   /// <returns>True if the host of the link matches the internal host of the options.</returns>
-  private bool IsInternalHost(ReadOnlySpan<char> link, bool withScheme)
+  private bool IsInternalHost(ReadOnlySpan<char> link, int authorityStart)
   {
     if (string.IsNullOrEmpty(_internalHost))
       return false;
 
-    var host = GetHost(link, withScheme);
+    var host = GetHost(link, authorityStart);
     return host.Equals(_internalHost, StringComparison.OrdinalIgnoreCase);
   }
 
@@ -510,11 +514,11 @@ public class Linkernizer : ILinkernizer
   /// which matches the behavior of <see cref="Uri.Host"/>.
   /// </summary>
   /// <param name="link">The assumed link with or without scheme.</param>
-  /// <param name="withScheme">True if the link was determined to already have the scheme at the beginning.</param>
+  /// <param name="authorityStart">The index where the authority begins, which is after the scheme delimiter for links with a scheme and zero otherwise.</param>
   /// <returns>The host of the given link without the scheme, user information, and port.</returns>
-  private static ReadOnlySpan<char> GetHost(ReadOnlySpan<char> link, bool withScheme)
+  private static ReadOnlySpan<char> GetHost(ReadOnlySpan<char> link, int authorityStart)
   {
-    var linkWithoutScheme = Scheme.Strip(link, withScheme);
+    var linkWithoutScheme = link[authorityStart..];
 
     // The authority ends at the first slash, question mark, or hash.
     var authorityEnd = linkWithoutScheme.IndexOfAny(AuthorityDelimiters);
