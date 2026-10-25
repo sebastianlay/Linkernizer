@@ -1,4 +1,6 @@
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 using Ganss.Text;
 using TextHelper;
@@ -6,80 +8,72 @@ using TextHelper;
 namespace Linkernizer.Benchmarks;
 
 /// <summary>
-/// Compares the following libraries regarding execution time and memory footprint:
-///   <list type="bullet">
-///     <item>
-///       <term>Linkernizer (2026)</term>
-///       <description>https://github.com/sebastianlay/linkernizer</description>
-///     </item>
-///     <item>
-///       <term>AutoLink (2015-2022)</term>
-///       <description>https://github.com/mganss/AutoLink</description>
-///     </item>
-///     <item>
-///       <term>TextHelper (2011)</term>
-///       <description>https://github.com/tylermercier/TextHelper</description>
-///     </item>
-///   </list>
+/// The values used in the benchmarks.
 /// </summary>
-[MemoryDiagnoser]
-public class Benchmarks
+internal static class Values
 {
-  private const string ShortTextNoMatches = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua.";
-  private const string LongTextNoMatches = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-  private const string ShortTextTwoMatches = "Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua.";
-  private const string LongTextFourMatches = "Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+  internal const string ShortTextNoMatches = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua.";
+  internal const string LongTextNoMatches = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+  internal const string ShortTextTwoMatches = "Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua.";
+  internal const string LongTextFourMatches = "Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, www.example.org consectetur adipiscing elit, example@example.org sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+}
 
+/// <summary>
+/// The benchmarks for Linkernizer (2026) (https://github.com/sebastianlay/linkernizer).
+/// </summary>
+public class LinkernizerBenchmarks
+{
   private readonly Linkernizer _linkernizer = new();
+
+  [Benchmark]
+  public string LinkernizerShortTextNoMatches() => _linkernizer.Linkernize(Values.ShortTextNoMatches);
+
+  [Benchmark]
+  public string LinkernizerLongTextNoMatches() => _linkernizer.Linkernize(Values.LongTextNoMatches);
+
+  [Benchmark]
+  public string LinkernizerShortTextTwoMatches() => _linkernizer.Linkernize(Values.ShortTextTwoMatches);
+
+  [Benchmark]
+  public string LinkernizerLongTextFourMatches() => _linkernizer.Linkernize(Values.LongTextFourMatches);
+}
+
+/// <summary>
+/// The benchmarks for AutoLink (2015-2022) (https://github.com/mganss/AutoLink).
+/// </summary>
+public class AutoLinkBenchmarks
+{
   private readonly AutoLink _autoLink = new();
 
-  #region Linkernizer
+  [Benchmark]
+  public string AutoLinkShortTextNoMatches() => _autoLink.Link(Values.ShortTextNoMatches);
 
   [Benchmark]
-  public string LinkernizerShortTextNoMatches() => _linkernizer.Linkernize(ShortTextNoMatches);
+  public string AutoLinkLongTextNoMatches() => _autoLink.Link(Values.LongTextNoMatches);
 
   [Benchmark]
-  public string LinkernizerLongTextNoMatches() => _linkernizer.Linkernize(LongTextNoMatches);
+  public string AutoLinkShortTextTwoMatches() => _autoLink.Link(Values.ShortTextTwoMatches);
 
   [Benchmark]
-  public string LinkernizerShortTextTwoMatches() => _linkernizer.Linkernize(ShortTextTwoMatches);
+  public string AutoLinkLongTextFourMatches() => _autoLink.Link(Values.LongTextFourMatches);
+}
+
+/// <summary>
+/// The benchmarks for TextHelper (2011) (https://github.com/tylermercier/TextHelper).
+/// </summary>
+public class TextHelperBenchmarks
+{
+  [Benchmark]
+  public string TextHelperShortTextNoMatches() => Values.ShortTextNoMatches.AutoLink();
 
   [Benchmark]
-  public string LinkernizerLongTextFourMatches() => _linkernizer.Linkernize(LongTextFourMatches);
-
-  #endregion
-
-  #region AutoLink
+  public string TextHelperLongTextNoMatches() => Values.LongTextNoMatches.AutoLink();
 
   [Benchmark]
-  public string AutoLinkShortTextNoMatches() => _autoLink.Link(ShortTextNoMatches);
+  public string TextHelperShortTextTwoMatches() => Values.ShortTextTwoMatches.AutoLink();
 
   [Benchmark]
-  public string AutoLinkLongTextNoMatches() => _autoLink.Link(LongTextNoMatches);
-
-  [Benchmark]
-  public string AutoLinkShortTextTwoMatches() => _autoLink.Link(ShortTextTwoMatches);
-
-  [Benchmark]
-  public string AutoLinkLongTextFourMatches() => _autoLink.Link(LongTextFourMatches);
-
-  #endregion
-
-  #region TextHelper
-
-  [Benchmark]
-  public string TextHelperShortTextNoMatches() => ShortTextNoMatches.AutoLink();
-
-  [Benchmark]
-  public string TextHelperLongTextNoMatches() => LongTextNoMatches.AutoLink();
-
-  [Benchmark]
-  public string TextHelperShortTextTwoMatches() => ShortTextTwoMatches.AutoLink();
-
-  [Benchmark]
-  public string TextHelperLongTextFourMatches() => LongTextFourMatches.AutoLink();
-
-  #endregion
+  public string TextHelperLongTextFourMatches() => Values.LongTextFourMatches.AutoLink();
 }
 
 /// <summary>
@@ -90,8 +84,14 @@ public static class Program
   /// <summary>
   /// Runs the actual benchmarks.
   /// </summary>
-  public static void Main()
+  public static void Main(string[] args)
   {
-    BenchmarkRunner.Run<Benchmarks>();
+    var config = DefaultConfig.Instance.AddDiagnoser(MemoryDiagnoser.Default);
+
+    BenchmarkSwitcher.FromTypes([
+      typeof(LinkernizerBenchmarks),
+      typeof(AutoLinkBenchmarks),
+      typeof(TextHelperBenchmarks)
+    ]).Run(args, config);
   }
 }
