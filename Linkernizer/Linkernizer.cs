@@ -27,8 +27,8 @@ public class Linkernizer : ILinkernizer
   // while keeping the buffer small (32 * 8 = 256 bytes) for the stack.
   private const int InitialReplacementCapacity = 32;
 
-  // The shortest possible link is either "ab://c" or "a@b.de".
-  private const int MinimumLinkLength = 6;
+  // The shortest possible link is "a://b".
+  private const int MinimumLinkLength = 5;
 
   private static readonly SearchValues<string> Indicators = SearchValues.Create([Scheme.Delimiter, DefaultSubdomain, "@"],
     StringComparison.OrdinalIgnoreCase

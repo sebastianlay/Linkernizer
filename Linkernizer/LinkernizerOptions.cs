@@ -136,7 +136,7 @@ public class LinkernizerOptions
   internal string? Validate()
   {
     if (string.IsNullOrWhiteSpace(DefaultScheme))
-      return "DefaultScheme must not be null or empty.";
+      return "DefaultScheme must not be null or whitespace.";
 
     if (!DefaultScheme.EndsWith(Scheme.Delimiter, StringComparison.Ordinal))
       return "DefaultScheme must end with \"://\".";
