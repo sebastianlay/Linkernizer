@@ -211,7 +211,7 @@ public class Linkernizer : ILinkernizer
   /// <returns>A newly constructed string with relevant replacements done.</returns>
   private string CreateOutput(ReadOnlySpan<char> input, ReadOnlySpan<Replacement> replacements)
   {
-    var outputLength = GetOutputLength(input.Length, replacements, _defaultScheme.Length, _openingTagEndExternal.Length);
+    var outputLength = GetOutputLength(input.Length, replacements, _defaultScheme, _openingTagEndExternal);
     var state = new State(input, replacements, _defaultScheme, _openingTagEndExternal);
 
     return string.Create(outputLength, state, WriteOutput);
@@ -223,39 +223,23 @@ public class Linkernizer : ILinkernizer
   /// </summary>
   /// <param name="length">The length of the complete input.</param>
   /// <param name="replacements">The list of replacements to be made.</param>
-  /// <param name="defaultSchemeLength">The length of the default scheme.</param>
-  /// <param name="externalTagEndLength">The length of the opening tag end used for external links.</param>
+  /// <param name="defaultScheme">The default scheme to prepend for links without a scheme.</param>
+  /// <param name="openingTagEndExternal">The opening tag end to use for external links.</param>
   /// <returns>The exact length of the output string.</returns>
-  /// <exception cref="UnreachableException">A replacement has an unknown type.</exception>
   /// <exception cref="OverflowException">The output would be longer than <see cref="int.MaxValue"/> characters.</exception>
   private static int GetOutputLength(int length, ReadOnlySpan<Replacement> replacements,
-    int defaultSchemeLength, int externalTagEndLength)
+    string defaultScheme, string openingTagEndExternal)
   {
     foreach (var replacement in replacements)
     {
+      var (prefix, tagEnd) = GetMarkup(replacement.Type, defaultScheme, openingTagEndExternal);
+
       // The additions are checked so that an output which would not fit into a string
-      // fails with a meaningful exception here.
+      // fails with a meaningful exception here. The given length already contains the
+      // matched part of the input once, so only its copy in the href attribute is added.
       checked
       {
-        length += replacement.Length + replacement.Type switch
-        {
-          ReplacementType.InternalWithScheme or ReplacementType.EmailWithScheme
-            => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length,
-
-          ReplacementType.InternalWithoutScheme
-            => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + defaultSchemeLength,
-
-          ReplacementType.ExternalWithScheme
-            => OpeningTagBegin.Length + externalTagEndLength + ClosingTag.Length,
-
-          ReplacementType.ExternalWithoutScheme
-            => OpeningTagBegin.Length + externalTagEndLength + ClosingTag.Length + defaultSchemeLength,
-
-          ReplacementType.EmailWithoutScheme
-            => OpeningTagBegin.Length + OpeningTagEndInternal.Length + ClosingTag.Length + MailToProtocol.Length,
-
-          _ => throw new UnreachableException($"Unknown replacement type: {replacement.Type}")
-        };
+        length += OpeningTagBegin.Length + prefix.Length + replacement.Length + tagEnd.Length + ClosingTag.Length;
       }
     }
 
@@ -552,44 +536,41 @@ public class Linkernizer : ILinkernizer
   /// <param name="type">The type of replacement that determines the HTML markup.</param>
   /// <param name="defaultScheme">The default scheme to prepend for links without a scheme.</param>
   /// <param name="openingTagEndExternal">The opening tag end to use for external links.</param>
-  /// <exception cref="UnreachableException">The replacement has an unknown type.</exception>
   private static void WriteReplacement(Span<char> output, ref int position, ReadOnlySpan<char> inputSlice,
-    ReplacementType type, ReadOnlySpan<char> defaultScheme, ReadOnlySpan<char> openingTagEndExternal)
+    ReplacementType type, string defaultScheme, string openingTagEndExternal)
   {
+    var (prefix, tagEnd) = GetMarkup(type, defaultScheme, openingTagEndExternal);
+
     Write(output, ref position, OpeningTagBegin);
-
-    switch (type)
-    {
-      case ReplacementType.InternalWithScheme:
-      case ReplacementType.EmailWithScheme:
-        Write(output, ref position, inputSlice);
-        Write(output, ref position, OpeningTagEndInternal);
-        break;
-      case ReplacementType.InternalWithoutScheme:
-        Write(output, ref position, defaultScheme);
-        Write(output, ref position, inputSlice);
-        Write(output, ref position, OpeningTagEndInternal);
-        break;
-      case ReplacementType.ExternalWithScheme:
-        Write(output, ref position, inputSlice);
-        Write(output, ref position, openingTagEndExternal);
-        break;
-      case ReplacementType.ExternalWithoutScheme:
-        Write(output, ref position, defaultScheme);
-        Write(output, ref position, inputSlice);
-        Write(output, ref position, openingTagEndExternal);
-        break;
-      case ReplacementType.EmailWithoutScheme:
-        Write(output, ref position, MailToProtocol);
-        Write(output, ref position, inputSlice);
-        Write(output, ref position, OpeningTagEndInternal);
-        break;
-      default:
-        throw new UnreachableException($"Unknown replacement type: {type}");
-    }
-
+    Write(output, ref position, prefix);
+    Write(output, ref position, inputSlice);
+    Write(output, ref position, tagEnd);
     Write(output, ref position, inputSlice);
     Write(output, ref position, ClosingTag);
+  }
+
+  /// <summary>
+  /// Determines the parts of the HTML markup that depend on the type of replacement.
+  /// This is used for both computing the output length and writing the output,
+  /// so that the two cannot drift apart and corrupt the output.
+  /// </summary>
+  /// <param name="type">The type of replacement that determines the HTML markup.</param>
+  /// <param name="defaultScheme">The default scheme to prepend for links without a scheme.</param>
+  /// <param name="openingTagEndExternal">The opening tag end to use for external links.</param>
+  /// <returns>The prefix that is written in front of the link in the href attribute, and the end of the opening tag.</returns>
+  /// <exception cref="UnreachableException">The replacement has an unknown type.</exception>
+  private static (string Prefix, string TagEnd) GetMarkup(ReplacementType type,
+    string defaultScheme, string openingTagEndExternal)
+  {
+    return type switch
+    {
+      ReplacementType.InternalWithScheme or ReplacementType.EmailWithScheme => (string.Empty, OpeningTagEndInternal),
+      ReplacementType.InternalWithoutScheme => (defaultScheme, OpeningTagEndInternal),
+      ReplacementType.ExternalWithScheme => (string.Empty, openingTagEndExternal),
+      ReplacementType.ExternalWithoutScheme => (defaultScheme, openingTagEndExternal),
+      ReplacementType.EmailWithoutScheme => (MailToProtocol, OpeningTagEndInternal),
+      _ => throw new UnreachableException($"Unknown replacement type: {type}")
+    };
   }
 
   /// <summary>
