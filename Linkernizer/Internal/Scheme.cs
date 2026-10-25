@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections.Frozen;
 
 namespace Linkernizer.Internal;
@@ -19,6 +20,10 @@ internal static class Scheme
     StringComparer.OrdinalIgnoreCase, "javascript", "vbscript", "data")
     .GetAlternateLookup<ReadOnlySpan<char>>();
 
+  // The characters that are allowed in a scheme after its first letter according to RFC 3986.
+  private static readonly SearchValues<char> SchemeCharacters = SearchValues.Create(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-.");
+
   /// <summary>
   /// Determines if the given scheme only consists of the characters that are allowed
   /// in a scheme according to RFC 3986. Everything else is rejected because browsers
@@ -35,13 +40,7 @@ internal static class Scheme
       return false;
 
     // All following characters may also be digits or one of a few special characters.
-    foreach (var character in scheme[1..])
-    {
-      if (!char.IsAsciiLetterOrDigit(character) && character is not ('+' or '-' or '.'))
-        return false;
-    }
-
-    return true;
+    return !scheme[1..].ContainsAnyExcept(SchemeCharacters);
   }
 
   /// <summary>
