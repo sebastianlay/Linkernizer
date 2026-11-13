@@ -5,7 +5,7 @@ It takes in plain text and wraps anything it considers a link with the HTML mark
 
 You can use it like this:
 ```c#
-var linkernizer = new Linkernizer();
+var linkernizer = new Linkernizer.Linkernizer();
 var input = "Visit us at www.example.org or email us at mail@example.org!";
 var output = linkernizer.Linkernize(input);
 // Visit us at <a href="https://www.example.org">www.example.org</a> or email us at <a href="mailto:mail@example.org">mail@example.org</a>!
@@ -13,7 +13,7 @@ var output = linkernizer.Linkernize(input);
 
 You can configure a few additional options like this:
 ```c#
-var linkernizer = new Linkernizer(options => {
+var linkernizer = new Linkernizer.Linkernizer(options => {
   options.OpenExternalLinksInNewTab = true; // inserts target="_blank" and rel="noopener"
   options.NoReferrerOnExternalLinks = true; // also adds noreferrer to the rel attribute
   options.InternalHost = "www.example.com"; // treat these as internal (no target or rel)
@@ -57,7 +57,7 @@ You can find more information on [https://www.nuget.org/packages/Linkernizer](ht
 ## Benchmarks
 
 The benchmarks compare the following libraries in their default configuration:
-- [Linkernizer](https://github.com/sebastianlay/Linkernizer) (1.4.0)
+- [Linkernizer](https://github.com/sebastianlay/Linkernizer) (2.0.0)
 - [AutoLink](https://github.com/mganss/AutoLink) (2.0.5)
 - [TextHelper](https://github.com/tylermercier/TextHelper) (0.2.0)
 
@@ -73,10 +73,10 @@ Keep in mind that the exact values will vary from run to run.
 ```
 | Method                         | Mean          | Error       | StdDev     | Gen0   | Allocated |
 |------------------------------- |--------------:|------------:|-----------:|-------:|----------:|
-| LinkernizerShortTextNoMatches  |      7.657 ns |   0.0631 ns |  0.0527 ns |      - |         - |
-| LinkernizerLongTextNoMatches   |     37.645 ns |   0.2509 ns |  0.2347 ns |      - |         - |
-| LinkernizerShortTextTwoMatches |    689.404 ns |   3.8499 ns |  3.6012 ns | 0.1163 |     488 B |
-| LinkernizerLongTextFourMatches |  3,139.607 ns |  11.1179 ns |  8.6801 ns | 0.5264 |    2208 B |
+| LinkernizerShortTextNoMatches  |      8.745 ns |   0.0121 ns |  0.0107 ns |      - |         - |
+| LinkernizerLongTextNoMatches   |     33.516 ns |   0.0121 ns |  0.0101 ns |      - |         - |
+| LinkernizerShortTextTwoMatches |    261.223 ns |   0.3314 ns |  0.3100 ns | 0.1163 |     488 B |
+| LinkernizerLongTextFourMatches |    578.872 ns |   0.3146 ns |  0.2627 ns | 0.5274 |    2208 B |
 |------------------------------- |--------------:|------------:|-----------:|-------:|----------:|
 | AutoLinkShortTextNoMatches     |    913.125 ns |   5.3398 ns |  4.7336 ns | 0.0210 |      88 B |
 | AutoLinkLongTextNoMatches      |  6,377.185 ns |  25.5865 ns | 23.9336 ns | 0.0153 |      88 B |

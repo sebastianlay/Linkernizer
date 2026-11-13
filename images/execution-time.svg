@@ -39,18 +39,18 @@
         <rect x="115" y="99" width="371" height="1" stroke="none" stroke-width="0" fill="#ebebeb"></rect>
       </g>
       <g>
-        <rect x="133" y="315.4232" width="19" height="0.5" stroke="none" stroke-width="0" fill="#fde725"></rect>
-        <rect x="226" y="315.20816" width="18" height="0.5" stroke="none" stroke-width="0" fill="#fde725"></rect>
-        <rect x="318" y="309" width="19" height="6" stroke="none" stroke-width="0" fill="#fde725"></rect>
-        <rect x="411" y="283" width="18" height="32" stroke="none" stroke-width="0" fill="#fde725"></rect>
-        <rect x="153" y="305" width="18" height="10" stroke="none" stroke-width="0" fill="#22a884"></rect>
-        <rect x="245" y="237" width="18" height="78" stroke="none" stroke-width="0" fill="#22a884"></rect>
-        <rect x="338" y="300" width="18" height="15" stroke="none" stroke-width="0" fill="#22a884"></rect>
-        <rect x="430" y="222" width="18" height="93" stroke="none" stroke-width="0" fill="#22a884"></rect>
-        <rect x="172" y="286" width="18" height="29" stroke="none" stroke-width="0" fill="#440154"></rect>
-        <rect x="264" y="133" width="19" height="182" stroke="none" stroke-width="0" fill="#440154"></rect>
-        <rect x="357" y="273" width="18" height="42" stroke="none" stroke-width="0" fill="#440154"></rect>
-        <rect x="449" y="112" width="19" height="203" stroke="none" stroke-width="0" fill="#440154"></rect>
+        <rect x="133" y="315" width="19" height="0.5" stroke="none" stroke-width="0" fill="#fde725"></rect>
+        <rect x="226" y="315" width="18" height="0.5" stroke="none" stroke-width="0" fill="#fde725"></rect>
+        <rect x="318" y="313" width="19" height="2" stroke="none" stroke-width="0" fill="#fde725"></rect>
+        <rect x="411" y="309" width="18" height="6" stroke="none" stroke-width="0" fill="#fde725"></rect>
+        <rect x="153" y="306" width="18" height="9" stroke="none" stroke-width="0" fill="#22a884"></rect>
+        <rect x="245" y="254" width="18" height="61" stroke="none" stroke-width="0" fill="#22a884"></rect>
+        <rect x="338" y="301" width="18" height="14" stroke="none" stroke-width="0" fill="#22a884"></rect>
+        <rect x="430" y="237" width="18" height="78" stroke="none" stroke-width="0" fill="#22a884"></rect>
+        <rect x="172" y="285" width="18" height="30" stroke="none" stroke-width="0" fill="#440154"></rect>
+        <rect x="264" y="105" width="19" height="210" stroke="none" stroke-width="0" fill="#440154"></rect>
+        <rect x="357" y="274" width="18" height="41" stroke="none" stroke-width="0" fill="#440154"></rect>
+        <rect x="449" y="84" width="19" height="231" stroke="none" stroke-width="0" fill="#440154"></rect>
       </g>
       <g>
         <rect x="115" y="315" width="371" height="1" stroke="none" stroke-width="0" fill="#333333"></rect>

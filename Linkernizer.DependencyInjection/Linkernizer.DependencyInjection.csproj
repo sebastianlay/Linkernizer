@@ -6,8 +6,8 @@
     <Title>Linkernizer.DependencyInjection</Title>
     <Description>Dependency injection extensions for Linkernizer.</Description>
     <PackageTags>autolink;linkify;linkification;links;url;email;hyperlink;anchor;html;markup;dependencyinjection;di</PackageTags>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <Version>1.0.0</Version>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <Version>2.0.0</Version>
     <IsAotCompatible>true</IsAotCompatible>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
