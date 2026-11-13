@@ -93,9 +93,44 @@ internal sealed class CustomOptionsData : TheoryData<string?, string?>
     Add("(https://www.example.org/?example=example%5Borg%5D)", """(<a href="https://www.example.org/?example=example%5Borg%5D" target="_blank" rel="noopener">https://www.example.org/?example=example%5Borg%5D</a>)""");
     Add("(https://www.example.org.)", """(<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>.)""");
     Add("(www.example.org.)", """(<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>.)""");
-    // An unmatched parenthesis is part of the candidate and therefore invalidates the scheme
-    Add("(https://www.example.org", "(https://www.example.org");
-    Add("(www.example.org", "(www.example.org");
+    Add("((www.example.org))", """((<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>))""");
+
+    // Other brackets
+    Add("[www.example.org]", """[<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>]""");
+    Add("{www.example.org}", """{<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>}""");
+    Add("[https://[2001:db8::1]]", """[<a href="https://[2001:db8::1]" target="_blank" rel="noopener">https://[2001:db8::1]</a>]""");
+
+    // Unbalanced parentheses and brackets are part of the surrounding text
+    Add("(https://www.example.org", """(<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>""");
+    Add("(www.example.org", """(<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>""");
+    Add("[www.example.org", """[<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>""");
+    Add("{www.example.org", """{<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>""");
+    Add("<www.example.org", """<<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>""");
+    Add("https://www.example.org)", """<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>)""");
+    Add("www.example.org)", """<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>)""");
+    Add("www.example.org]", """<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>]""");
+    Add("www.example.org}", """<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>}""");
+    Add("www.example.org>", """<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>>""");
+    Add("https://www.example.org/example)", """<a href="https://www.example.org/example" target="_blank" rel="noopener">https://www.example.org/example</a>)""");
+
+    // Unbalanced parentheses and brackets next to balanced ones, which are part of the link
+    Add("https://www.example.org/example_(example))", """<a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>)""");
+    Add("(https://www.example.org/example_(example)", """(<a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>""");
+    Add("https://www.example.org/example_(example.)", """<a href="https://www.example.org/example_(example.)" target="_blank" rel="noopener">https://www.example.org/example_(example.)</a>""");
+    Add("https://www.example.org/example_(example).)", """<a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>.)""");
+    Add("https://www.example.org/example_[(example)])", """<a href="https://www.example.org/example_[(example)]" target="_blank" rel="noopener">https://www.example.org/example_[(example)]</a>)""");
+
+    // Unbalanced parentheses and brackets in context
+    Add("Lorem (ipsum https://www.example.org) dolor", """Lorem (ipsum <a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>) dolor""");
+    Add("Lorem (www.example.org ipsum) dolor", """Lorem (<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a> ipsum) dolor""");
+    Add("Lorem (ipsum www.example.com) dolor", """Lorem (ipsum <a href="http://www.example.com">www.example.com</a>) dolor""");
+    Add("Lorem [ipsum www.example.org] dolor", """Lorem [ipsum <a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>] dolor""");
+    Add("Lorem (ipsum https://www.example.org/example_(example)) dolor", """Lorem (ipsum <a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a>) dolor""");
+    Add("Lorem (ipsum https://www.example.org). Dolor.", """Lorem (ipsum <a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>). Dolor.""");
+    Add("Lorem (ipsum www.example.org.) Dolor.", """Lorem (ipsum <a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>.) Dolor.""");
+    Add("Lorem (ipsum mail@example.org) dolor", """Lorem (ipsum <a href="mailto:mail@example.org">mail@example.org</a>) dolor""");
+    Add("Lorem (mail@example.org ipsum) dolor", """Lorem (<a href="mailto:mail@example.org">mail@example.org</a> ipsum) dolor""");
+    Add("Lorem <mail@example.org> ipsum", """Lorem <<a href="mailto:mail@example.org">mail@example.org</a>> ipsum""");
 
     // Parentheses in context
     Add("Lorem https://www.example.org/example_(example) ipsum", """Lorem <a href="https://www.example.org/example_(example)" target="_blank" rel="noopener">https://www.example.org/example_(example)</a> ipsum""");
@@ -114,6 +149,14 @@ internal sealed class CustomOptionsData : TheoryData<string?, string?>
     Add("""Lorem "www.example.org/path" ipsum""", """Lorem "<a href="http://www.example.org/path" target="_blank" rel="noopener">www.example.org/path</a>" ipsum""");
     Add("""Lorem 'https://www.example.org' ipsum""", """Lorem '<a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>' ipsum""");
     Add("""Lorem "www.example.org". Ipsum.""", """Lorem "<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>". Ipsum.""");
+    Add("''www.example.org''", """''<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>''""");
+
+    // Unbalanced quotes are part of the surrounding text
+    Add("""Lorem (ipsum "www.example.org") dolor""", """Lorem (ipsum "<a href="http://www.example.org" target="_blank" rel="noopener">www.example.org</a>") dolor""");
+
+    // Unbalanced quotes next to balanced ones, which are part of the link
+    Add("https://www.example.org/?example='example'", """<a href="https://www.example.org/?example='example'" target="_blank" rel="noopener">https://www.example.org/?example='example'</a>""");
+    Add("'https://www.example.org/?example='example''", """'<a href="https://www.example.org/?example='example'" target="_blank" rel="noopener">https://www.example.org/?example='example'</a>'""");
 
     // Punctuation
     Add("Lorem https://www.example.org. Ipsum.", """Lorem <a href="https://www.example.org" target="_blank" rel="noopener">https://www.example.org</a>. Ipsum.""");

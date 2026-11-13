@@ -358,6 +358,21 @@ public class Linkernizer : ILinkernizer
         continue;
       }
 
+      // Trim leading parentheses if the number of parentheses in rest of the input is balanced
+      if (length > 1 && IsSurplusCharacter(input[offset], input[(offset + 1)..(offset + length)]))
+      {
+        offset++;
+        length--;
+        continue;
+      }
+
+      // Trim trailing parentheses if the number of parentheses in rest of the input is balanced
+      if (length > 1 && IsSurplusCharacter(input[offset + length - 1], input[offset..(offset + length - 1)]))
+      {
+        length--;
+        continue;
+      }
+
       // Trim parentheses, brackets and quotes in pairs.
       if (length > 1 && AreMatchingPair(input[offset], input[offset + length - 1]))
       {
@@ -387,6 +402,25 @@ public class Linkernizer : ILinkernizer
       '<' => lastChar == '>',
       '"' => lastChar == '"',
       '\'' => lastChar == '\'',
+      _ => false
+    };
+  }
+
+  /// <summary>
+  /// Determines if the number of parentheses in the tail is balanced
+  /// for the given head character.
+  /// </summary>
+  /// <param name="head">The first or last character of the candidate.</param>
+  /// <param name="tail">The remaining characters of the candidate.</param>
+  /// <returns>True if the number of opening and closing parentheses in the tail is the same.</returns>
+  private static bool IsSurplusCharacter(char head, ReadOnlySpan<char> tail)
+  {
+    return head switch
+    {
+      '(' or ')' => tail.Count('(') == tail.Count(')'),
+      '[' or ']' => tail.Count('[') == tail.Count(']'),
+      '{' or '}' => tail.Count('{') == tail.Count('}'),
+      '<' or '>' => tail.Count('<') == tail.Count('>'),
       _ => false
     };
   }
