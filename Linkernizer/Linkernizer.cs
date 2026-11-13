@@ -186,17 +186,14 @@ public class Linkernizer : ILinkernizer
   /// </returns>
   private string? ReplaceLinks(ReadOnlySpan<char> input)
   {
-    var replacementList = GetReplacements(input, stackalloc Replacement[InitialReplacementCapacity]);
+    // The list is disposed on every exit, so that a grown buffer is
+    // returned to the pool even when creating the output throws.
+    using var replacementList = GetReplacements(input, stackalloc Replacement[InitialReplacementCapacity]);
 
-    // Without any replacements the list never grew beyond the stack-allocated
-    // buffer, so there is no pooled array to return and nothing to dispose.
     if (replacementList.Replacements.IsEmpty)
       return null;
 
-    var output = CreateOutput(input, replacementList.Replacements);
-    replacementList.Dispose();
-
-    return output;
+    return CreateOutput(input, replacementList.Replacements);
   }
 
   /// <summary>
